@@ -31,7 +31,8 @@ export function outcomeLabel(outcome: string): string {
   return labels[outcome] ?? outcome;
 }
 
-function shell(input: { title: string; description: string; body: string; active?: string }): string {
+function shell(input: { title: string; description: string; body: string; active?: string; vertical?: string }): string {
+  const vertical = input.vertical ?? "platform";
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,12 +41,9 @@ function shell(input: { title: string; description: string; body: string; active
   <title>${escapeHtml(input.title)}</title>
   <meta name="description" content="${escapeHtml(input.description)}">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,520;9..144,640&family=Source+Sans+3:wght@400;560;680&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/styles.css">
 </head>
-<body>
+<body data-vertical="${vertical}" class="theme-${vertical}">
 ${input.body}
 </body>
 </html>`;
@@ -86,7 +84,8 @@ export function renderLanding(): string {
       </nav>
     </header>
     <main>
-      <section class="hero platform">
+      <section class="hero platform hvac-hero">
+        <div>
         <p class="eyebrow">Portfolio demo · fictional businesses · free tiers only</p>
         <h1>One voice core. A dispatcher for every trade.</h1>
         <p class="lede">Browser calls through Vapi, tools defined in code, and a mock back office you can click through. Fennwick Comfort answers for a made-up Duluth heating company. Lindenmere Primary Care answers for a made-up Madison clinic. Wrenline answers for a made-up Austin card. Quillmere Law answers for a made-up Denver firm and does not give legal advice. Larkglass answers for a made-up Portland bistro and does not charge a card. Bramblefen answers for a made-up Providence property manager and does not collect rent.</p>
@@ -98,8 +97,13 @@ export function renderLanding(): string {
           <a class="button ghost" href="/v/restaurant">Talk to Larkglass</a>
           <a class="button ghost" href="/v/property">Talk to Bramblefen</a>
         </div>
+        </div>
+        <div class="console voice-stage" data-state="idle" aria-hidden="true">
+          <span class="orb platform-orb" id="orb"></span>
+          <p class="status">Pick a line. Talk.</p>
+        </div>
       </section>
-      <section class="catalog" aria-label="Verticals">
+      <section class="catalog bento" aria-label="Verticals">
         ${cards}
       </section>
       <section class="split">
@@ -124,6 +128,7 @@ export function renderHvacHome(base: string): string {
   return shell({
     title: `${BRAND.name} · after-hours dispatcher`,
     description: "Talk to a fictional Duluth HVAC dispatcher. It triages gas and CO alarms, books arrival windows, and queues demo texts.",
+    vertical: "hvac",
     body: `<header class="bar hvac">
       <a class="brand" href="${base || "/"}">
         <span class="mark pine" aria-hidden="true"></span>
@@ -147,14 +152,18 @@ export function renderHvacHome(base: string): string {
             ${BRAND.hours.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}
           </ul>
         </div>
-        <div class="console" id="console" data-state="idle">
-          <button id="talk" class="talk" type="button" data-token-url="${base}/api/call-token" data-board-url="${base}/board">
-            <span class="dot" aria-hidden="true"></span>
+        <div class="console voice-stage" id="console" data-state="idle" data-role="Dispatch">
+          <button id="talk" class="talk orb-button" type="button" data-token-url="${base}/api/call-token" data-board-url="${base}/board" data-idle-label="Talk to dispatch" aria-label="Talk to dispatch">
+            <span class="orb" id="orb" aria-hidden="true"></span>
             <span class="label">Talk to dispatch</span>
           </button>
           <p class="status" id="status" role="status" aria-live="polite">Uses your microphone. Up to 3 calls per visitor a day, 4 minutes each. Free Vapi credits.</p>
-          <div class="meter" aria-hidden="true"><span id="level"></span></div>
-          <ol class="transcript" id="transcript" aria-label="Live transcript"></ol>
+          <div class="call-controls" hidden><button type="button" id="mute">Mute</button></div>
+          <div class="stage-panels">
+            <ol class="transcript" id="transcript" aria-label="Live transcript"></ol>
+            <ol class="tools" id="tools" aria-label="Tool calls"></ol>
+          </div>
+          <p class="sr-only" id="call-live" role="status" aria-live="polite"></p>
         </div>
       </section>
       <section class="danger" role="note">
@@ -185,6 +194,7 @@ export function renderHvacHome(base: string): string {
       </section>
     </main>
     <footer><p>${escapeHtml(BRAND.disclaimer)}</p></footer>
+    <script type="module" src="/assets/orb.js"></script>
     <script type="module" src="/assets/talk.js"></script>`,
   });
 }
@@ -212,6 +222,7 @@ export function renderBoard(base: string, tab: "board" | "calls" | "messages" | 
   return shell({
     title: `${tabTitle(tab)} · ${BRAND.name}`,
     description: "Demo dispatch board for the fictional Fennwick Comfort Co.",
+    vertical: "hvac",
     body: `<header class="bar hvac">
       <a class="brand" href="${base || "/"}">
         <span class="mark pine" aria-hidden="true"></span>
@@ -249,6 +260,7 @@ export function renderCall(base: string, call: CallRecord, tools: ToolCallRecord
   return shell({
     title: `${call.callerName || "Call"} · ${BRAND.name}`,
     description: "Call detail for the fictional HVAC dispatcher.",
+    vertical: "hvac",
     body: `<header class="bar hvac">
       <a class="brand" href="${base}/calls"><span class="mark pine" aria-hidden="true"></span><span><strong>Back to calls</strong><small>${escapeHtml(BRAND.name)}</small></span></a>
     </header>

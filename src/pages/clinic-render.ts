@@ -18,12 +18,9 @@ function shell(title: string, description: string, body: string): string {
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,520;9..144,640&family=Source+Sans+3:wght@400;560;680&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/styles.css">
 </head>
-<body class="theme-clinic">
+<body data-vertical="clinic" class="theme-clinic">
 ${body}
 </body>
 </html>`;
@@ -76,14 +73,18 @@ export function renderClinicHome(base: string): string {
           <p class="lede">Lindenmere answers the phone for a made-up Madison clinic. Chest pain, stroke signs, trouble breathing, and anaphylaxis go to 911. Suicidal ideation goes to 988. Everything else is a sick visit, a nurse transfer, or a routine booking. The agent does not diagnose.</p>
           <ul class="facts">${CLINIC.hours.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>
         </div>
-        <div class="console" id="console" data-state="idle">
-          <button id="talk" class="talk" type="button" data-token-url="${base}/api/call-token" data-board-url="${base}/board" data-idle-label="Talk to the front desk">
-            <span class="dot" aria-hidden="true"></span>
+        <div class="console voice-stage" id="console" data-state="idle" data-role="Front desk">
+          <button id="talk" class="talk orb-button" type="button" data-token-url="${base}/api/call-token" data-board-url="${base}/board" data-idle-label="Talk to the front desk" aria-label="Talk to the front desk">
+            <span class="orb" id="orb" aria-hidden="true"></span>
             <span class="label">Talk to the front desk</span>
           </button>
           <p class="status" id="status" role="status" aria-live="polite">Microphone. Up to 3 demo calls a day, 4 minutes each. Use a made-up name and a 555 number.</p>
-          <div class="meter" aria-hidden="true"><span id="level"></span></div>
-          <ol class="transcript" id="transcript" aria-label="Live transcript"></ol>
+          <div class="call-controls" hidden><button type="button" id="mute">Mute</button></div>
+          <div class="stage-panels">
+            <ol class="transcript" id="transcript" aria-label="Live transcript"></ol>
+            <ol class="tools" id="tools" aria-label="Tool calls"></ol>
+          </div>
+          <p class="sr-only" id="call-live" role="status" aria-live="polite"></p>
         </div>
       </section>
       <section class="danger" role="note">
@@ -114,6 +115,7 @@ export function renderClinicHome(base: string): string {
       </section>
     </main>
     <footer><p>${escapeHtml(CLINIC.disclaimer)}</p></footer>
+    <script type="module" src="/assets/orb.js"></script>
     <script type="module" src="/assets/talk.js"></script>`,
   );
 }

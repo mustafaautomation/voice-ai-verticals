@@ -17,12 +17,9 @@ function shell(title: string, description: string, body: string): string {
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,520;9..144,640&family=Source+Sans+3:wght@400;560;680&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/styles.css">
 </head>
-<body class="theme-fintech">
+<body data-vertical="fintech" class="theme-fintech">
 ${body}
 </body>
 </html>`;
@@ -69,14 +66,18 @@ export function renderFintechHome(base: string): string {
           <p class="lede">${escapeHtml(WRENLINE.name)} answers for a made-up Austin card app. It checks name, last four, and date of birth or a demo app code before it reads a balance. Collections calls start with a mini-Miranda, stop on cease-contact, and never threaten. Disputes, freezes, and reissues stay on the demo ledger.</p>
           <ul class="facts">${WRENLINE.hours.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>
         </div>
-        <div class="console" id="console" data-state="idle">
-          <button id="talk" class="talk" type="button" data-token-url="${base}/api/call-token" data-board-url="${base}/board" data-idle-label="Talk to Wrenline">
-            <span class="dot" aria-hidden="true"></span>
+        <div class="console voice-stage" id="console" data-state="idle" data-role="Wrenline">
+          <button id="talk" class="talk orb-button" type="button" data-token-url="${base}/api/call-token" data-board-url="${base}/board" data-idle-label="Talk to Wrenline" aria-label="Talk to Wrenline">
+            <span class="orb" id="orb" aria-hidden="true"></span>
             <span class="label">Talk to Wrenline</span>
           </button>
           <p class="status" id="status" role="status" aria-live="polite">Microphone. Use a made-up name. The demo OTP on Maya Chen's app screen is 2468.</p>
-          <div class="meter" aria-hidden="true"><span id="level"></span></div>
-          <ol class="transcript" id="transcript" aria-label="Live transcript"></ol>
+          <div class="call-controls" hidden><button type="button" id="mute">Mute</button></div>
+          <div class="stage-panels">
+            <ol class="transcript" id="transcript" aria-label="Live transcript"></ol>
+            <ol class="tools" id="tools" aria-label="Tool calls"></ol>
+          </div>
+          <p class="sr-only" id="call-live" role="status" aria-live="polite"></p>
         </div>
       </section>
       <section class="danger" role="note">
@@ -106,6 +107,7 @@ export function renderFintechHome(base: string): string {
       </section>
     </main>
     <footer><p>${escapeHtml(WRENLINE.disclaimer)}</p></footer>
+    <script type="module" src="/assets/orb.js"></script>
     <script type="module" src="/assets/talk.js"></script>`,
   );
 }

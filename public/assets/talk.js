@@ -1,43 +1,108 @@
 const button = document.getElementById("talk");
 const consoleEl = document.getElementById("console");
 const statusEl = document.getElementById("status");
-const levelEl = document.getElementById("level");
 const transcriptEl = document.getElementById("transcript");
-if (!button || !consoleEl || !statusEl || !levelEl || !transcriptEl) {
+const toolsEl = document.getElementById("tools");
+const muteBtn = document.getElementById("mute");
+if (!button || !consoleEl || !statusEl || !transcriptEl) {
   throw new Error("Talk widget markup is missing");
 }
 const label = button.querySelector(".label");
 const tokenUrl = button.dataset.tokenUrl || "/v/hvac/api/call-token";
 const boardUrl = button.dataset.boardUrl || "/v/hvac/board";
+const roleName = consoleEl.dataset.role || "Dispatch";
+const liveRegion = document.getElementById("call-live");
 
 let vapi = null;
 let VapiClass = null;
 let live = false;
 let partial = null;
+let stick = true;
+let muted = false;
+
+const LIVE_STATES = new Set(["live", "listening", "speaking", "thinking"]);
+
+function labelFor(state) {
+  const idle = button.dataset.idleLabel || "Talk to dispatch";
+  if (state === "connecting") return "Connecting…";
+  if (state === "speaking") return `${roleName} is speaking…`;
+  if (state === "thinking") return "Thinking…";
+  if (state === "listening" || state === "live") return "End call";
+  return idle;
+}
 
 function setState(state, text) {
   consoleEl.dataset.state = state;
   if (text) statusEl.textContent = text;
-  live = state === "live";
-  if (label) label.textContent = live ? "End call" : button.dataset.idleLabel || "Talk to dispatch";
+  live = LIVE_STATES.has(state);
+  const next = labelFor(state);
+  if (label) label.textContent = next;
+  button.setAttribute("aria-label", next);
   button.disabled = state === "connecting";
+  if (muteBtn) muteBtn.hidden = !live;
+  if (liveRegion && text) liveRegion.textContent = text;
+}
+
+function setLevel(level) {
+  const value = Math.max(0, Math.min(1, Number(level) || 0));
+  consoleEl.dataset.level = String(value);
+  const meter = document.getElementById("level");
+  if (meter) meter.style.width = `${Math.round(value * 100)}%`;
 }
 
 function addLine(role, text, final = true) {
   if (partial && partial.dataset.role === role) {
     partial.querySelector("span").textContent = text;
+    partial.dataset.final = final ? "true" : "false";
     if (final) partial = null;
+    scrollTranscript();
     return;
   }
   const li = document.createElement("li");
   li.dataset.role = role;
+  li.dataset.final = final ? "true" : "false";
   const who = document.createElement("b");
-  who.textContent = role === "assistant" ? "Dispatch" : role === "user" ? "You" : "Tool";
+  who.textContent = role === "assistant" ? roleName : "You";
   const span = document.createElement("span");
   span.textContent = text;
   li.append(who, span);
   transcriptEl.append(li);
   partial = final ? null : li;
+  scrollTranscript();
+}
+
+function scrollTranscript() {
+  if (!stick) return;
+  transcriptEl.scrollTop = transcriptEl.scrollHeight;
+}
+
+transcriptEl.addEventListener("scroll", () => {
+  const gap = transcriptEl.scrollHeight - transcriptEl.scrollTop - transcriptEl.clientHeight;
+  stick = gap < 32;
+});
+
+function addTool(name) {
+  if (!toolsEl) return;
+  const li = document.createElement("li");
+  li.dataset.status = "pending";
+  li.dataset.tool = name;
+  const title = document.createElement("span");
+  title.className = "name";
+  title.textContent = name;
+  const state = document.createElement("span");
+  state.className = "state";
+  state.textContent = "pending";
+  li.append(title, state);
+  toolsEl.append(li);
+}
+
+function settleTools(status) {
+  if (!toolsEl) return;
+  for (const item of toolsEl.querySelectorAll("li[data-status='pending']")) {
+    item.dataset.status = status;
+    const state = item.querySelector(".state");
+    if (state) state.textContent = status === "ok" ? "ok" : "error";
+  }
 }
 
 class LimitError extends Error {}
@@ -100,26 +165,54 @@ async function load(token) {
     VapiClass = mod.default?.default ?? mod.default;
   }
   const client = new VapiClass(token, undefined, { avoidEval: true });
-  client.on("call-start", () => setState("live", "Connected. Speak into your microphone."));
+  client.on("call-start", () => setState("listening", "Connected. Speak into your microphone."));
   client.on("call-end", () => {
+    settleTools("ok");
     setState("idle", `Call ended. Activity is on ${boardUrl}.`);
-    levelEl.style.width = "0";
+    setLevel(0);
+    muted = false;
+    if (muteBtn) muteBtn.textContent = "Mute";
   });
-  client.on("speech-start", () => { if (live) statusEl.textContent = "Assistant is speaking…"; });
-  client.on("speech-end", () => { if (live) statusEl.textContent = "Listening…"; });
-  client.on("volume-level", (level) => { levelEl.style.width = `${Math.min(100, Math.round(level * 100))}%`; });
+  client.on("speech-start", () => {
+    if (!live) return;
+    setState("speaking", `${roleName} is speaking…`);
+  });
+  client.on("speech-end", () => {
+    if (!live) return;
+    setState("listening", "Listening…");
+  });
+  client.on("volume-level", (level) => setLevel(level));
   client.on("message", (message) => {
     if (message.type === "transcript" && message.transcript) {
       addLine(message.role === "assistant" ? "assistant" : "user", message.transcript, message.transcriptType === "final");
+      if (message.role === "user" && message.transcriptType !== "final" && live) setState("thinking", "Thinking…");
     } else if (message.type === "tool-calls" && Array.isArray(message.toolCallList)) {
-      for (const call of message.toolCallList) addLine("tool", `Calling ${call.function?.name ?? "a tool"}…`);
+      for (const call of message.toolCallList) addTool(call.function?.name ?? "tool");
+    } else if (message.type === "tool-call-result" || message.type === "function-call-result") {
+      settleTools(message.error ? "error" : "ok");
     }
   });
   client.on("error", (error) => {
     console.error("[voice-call]", error);
-    setState("idle", formatCallFailure("connect", error));
+    settleTools("error");
+    setState("error", formatCallFailure("connect", error));
   });
   return client;
+}
+
+new MutationObserver(() => {
+  const next = labelFor(consoleEl.dataset.state || "idle");
+  if (label) label.textContent = next;
+  button.setAttribute("aria-label", next);
+}).observe(consoleEl, { attributes: true, attributeFilter: ["data-state"] });
+
+if (muteBtn) {
+  muteBtn.addEventListener("click", () => {
+    if (!vapi || typeof vapi.setMuted !== "function") return;
+    muted = !muted;
+    vapi.setMuted(muted);
+    muteBtn.textContent = muted ? "Unmute" : "Mute";
+  });
 }
 
 button.addEventListener("click", async () => {
@@ -132,7 +225,9 @@ button.addEventListener("click", async () => {
     const grant = await requestToken();
     vapi = await load(grant.token);
     transcriptEl.replaceChildren();
+    toolsEl?.replaceChildren();
     partial = null;
+    stick = true;
     await vapi.start(grant.assistantId);
   } catch (error) {
     if (error instanceof LimitError) {
@@ -140,6 +235,6 @@ button.addEventListener("click", async () => {
       return;
     }
     console.error("[voice-call]", error);
-    setState("idle", formatCallFailure("start", error));
+    setState("error", formatCallFailure("start", error));
   }
 });

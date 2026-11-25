@@ -1,6 +1,6 @@
 # voice-ai-verticals
 
-Portfolio demo of a multi-vertical voice AI platform. The shared core is here. The first vertical is **Fennwick Comfort Co.**, a fictional heating and cooling company in Duluth, Minnesota. Later verticals (medical clinic, fintech support, legal intake, restaurant, property management) are listed on the landing page and are not built yet.
+Portfolio demo of a multi-vertical voice AI platform. Six fictional desks share one core: Fennwick Comfort (HVAC), Lindenmere (clinic), Wrenline (card support), Quillmere (legal intake), Larkglass (bistro), and Bramblefen (property). The interface is a dark voice stage — an audio-reactive orb, a live transcript, and a separate tool timeline — sitting on a dense ops console.
 
 Nothing in this repo is a real business, technician, address, or phone number. Harbor Glass Avenue is not a real street. Every phone number uses `555`. A gas smell or CO alarm in real life means leave the building and call 911.
 
@@ -33,6 +33,8 @@ Portfolio demo. Fictional data.
 ![Demo texts](docs/screenshots/messages.png)
 
 ![Walkthrough](docs/demo.gif)
+
+![Voice stage](docs/ui-demo.gif)
 
 A WebM of the same walkthrough is at [docs/demo.webm](docs/demo.webm). With the app on port 4317, `npx tsx scripts/record-demo.ts` prints a new webm path. Convert it with ffmpeg if you want a replacement GIF.
 

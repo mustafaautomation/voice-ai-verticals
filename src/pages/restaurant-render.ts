@@ -16,12 +16,9 @@ function shell(title: string, description: string, body: string): string {
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,520;9..144,640&family=Source+Sans+3:wght@400;560;680&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/styles.css">
 </head>
-<body class="theme-restaurant">
+<body data-vertical="restaurant" class="theme-restaurant">
 ${body}
 </body>
 </html>`;
@@ -78,14 +75,18 @@ export function renderRestaurantHome(base: string): string {
           <p class="lede">${escapeHtml(HOUSE.name)} takes phone orders with modifiers and a demo total, books parties of up to eight, and prints a kitchen ticket the board can see. It will not promise an allergen-free plate. A reaction goes to 911 before anyone talks about the chicken.</p>
           <ul class="facts">${HOUSE.hours.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>
         </div>
-        <div class="console" id="console" data-state="idle">
-          <button id="talk" class="talk" type="button" data-token-url="${base}/api/call-token" data-board-url="${base}/board" data-idle-label="Talk to Larkglass">
-            <span class="dot" aria-hidden="true"></span>
+        <div class="console voice-stage" id="console" data-state="idle" data-role="Host">
+          <button id="talk" class="talk orb-button" type="button" data-token-url="${base}/api/call-token" data-board-url="${base}/board" data-idle-label="Talk to Larkglass" aria-label="Talk to Larkglass">
+            <span class="orb" id="orb" aria-hidden="true"></span>
             <span class="label">Talk to Larkglass</span>
           </button>
           <p class="status" id="status" role="status" aria-live="polite">Microphone. Use a made-up name. Delivery in this demo stays in Portland.</p>
-          <div class="meter" aria-hidden="true"><span id="level"></span></div>
-          <ol class="transcript" id="transcript" aria-label="Live transcript"></ol>
+          <div class="call-controls" hidden><button type="button" id="mute">Mute</button></div>
+          <div class="stage-panels">
+            <ol class="transcript" id="transcript" aria-label="Live transcript"></ol>
+            <ol class="tools" id="tools" aria-label="Tool calls"></ol>
+          </div>
+          <p class="sr-only" id="call-live" role="status" aria-live="polite"></p>
         </div>
       </section>
       <section class="danger" role="note">
@@ -115,6 +116,7 @@ export function renderRestaurantHome(base: string): string {
       </section>
     </main>
     <footer><p>${escapeHtml(HOUSE.disclaimer)}</p></footer>
+    <script type="module" src="/assets/orb.js"></script>
     <script type="module" src="/assets/talk.js"></script>`,
   );
 }
