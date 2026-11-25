@@ -10,11 +10,13 @@ This follows the same shape as the Brightside Dental receptionist at [voice.quva
 
 ## Live links
 
-Live on Vercel:
+Portfolio demo. Fennwick Comfort Co. is a fictional brand. Live on the Vercel project `voice-ai-verticals`:
 
 - Platform landing: **https://verticals.quvantic.com**
 - HVAC demo (Fennwick Comfort Co.): **https://hvac.quvantic.com**
 - Dispatch board: **https://hvac.quvantic.com/board**
+
+Production browser calls use restricted Vapi public-key mode: the page receives `VAPI_PUBLIC_KEY` only after the per-visitor limit check, and that key is limited to these origins and this assistant. The assistant runs on Vapi's built-in Groq model `openai/gpt-oss-120b` with the Clara voice. No extra Groq credential is required for the call.
 
 ## Demo
 
@@ -179,7 +181,7 @@ docker compose up --build
 
 ### Sync the Vapi assistant
 
-The assistant name, prompt, Groq model, voice, and tool URLs live in `src/verticals/hvac/assistant.ts`.
+The assistant name, prompt, Groq model (`openai/gpt-oss-120b`), Clara voice, and tool URLs live in `src/verticals/hvac/assistant.ts`.
 
 ```bash
 npm run vapi:sync
@@ -253,16 +255,11 @@ Copy `.env.example`. Never commit `.env`.
 | `GROQ_API_KEY` | live eval only | Free-tier Groq key. Not used in CI. |
 | `GEMINI_API_KEY` | unused by the server | Reserved if you point live evals at Gemini. |
 
-## Go-live
+## Deploy
 
-`vercel.json` builds with `npm run build`, serves `public/`, and sends every other path to `api/index.js`. No Vercel token was available in this environment, so the domains are not attached yet. To put it on the two hostnames:
+`vercel.json` builds with `npm run build`, serves `public/`, and sends every other path to `api/index.js`. Production is the Vercel project `voice-ai-verticals`, with `verticals.quvantic.com` and `hvac.quvantic.com` on the same deployment. The app picks the page from the `Host` header (`x-forwarded-host` when `TRUST_PROXY_HEADERS=true`).
 
-1. Create a Vercel project from this Git repository (git-connected). Framework preset does not matter; `vercel.json` sets the build.
-2. Set project env vars for Production: `VAPI_WEBHOOK_SECRET`, `VAPI_API_KEY`, `VAPI_ORG_ID`, `VAPI_ASSISTANT_ID` (after the first sync), `TRUST_PROXY_HEADERS=true`, `DATABASE_PATH=/tmp/verticals.sqlite`, `SERVE_STATIC=false`, `PUBLIC_BASE_URL=https://hvac.quvantic.com`, `SMS_PROVIDER=mock`, `SEED_ON_BOOT=true`. Add `VAPI_PUBLIC_KEY` only if you are not signing JWTs.
-3. In the Vercel project, add domains `verticals.quvantic.com` and `hvac.quvantic.com`.
-4. In DNS for `quvantic.com`, add the CNAME or A records Vercel shows for those hosts. Both names point at the same deployment. The app picks the page from the `Host` header.
-5. From a machine that has `VAPI_API_KEY`, run `PUBLIC_BASE_URL=https://hvac.quvantic.com npm run vapi:sync`. Put the printed assistant id in `VAPI_ASSISTANT_ID` and redeploy if the token route needs it.
-6. In the Vapi dashboard, add a Groq API key (free tier) as a credential on this assistant, allow the two origins, and leave the phone number unattached.
+Production uses restricted Vapi public-key mode (`VAPI_PUBLIC_KEY` plus `VAPI_ASSISTANT_ID`, no private key on the server). The synced assistant uses Vapi's built-in Groq model `openai/gpt-oss-120b` and the Clara voice. Env vars on that project: `VAPI_WEBHOOK_SECRET`, `VAPI_PUBLIC_KEY`, `VAPI_ASSISTANT_ID`, `TRUST_PROXY_HEADERS=true`, `DATABASE_PATH=/tmp/verticals.sqlite`, `SERVE_STATIC=false`, `PUBLIC_BASE_URL=https://hvac.quvantic.com`, `SMS_PROVIDER=mock`, `SEED_ON_BOOT=true`.
 
 SQLite on Vercel lives under `/tmp` and resets when the instance is recycled. Jobs, calls, and texts can also split across instances. That matches the dental demo's call log. For a board that sticks, run the Docker image on a single Node host instead of serverless, with `DATABASE_PATH` on a volume. A shared document store (the dental demo's D1 relay) can be added later behind the same job functions; it is not wired in this slice.
 
