@@ -21,6 +21,9 @@ import {
   simulateClinicMissedCall,
 } from "./clinic/runtime.js";
 import { isClinicTool } from "./clinic/schemas.js";
+import { isFintechTool } from "./fintech/schemas.js";
+import { isDeskOpen as fintechDeskOpen } from "./fintech/brand.js";
+import { executeFintechTool, fintechCaller, fintechOutcome } from "./fintech/runtime.js";
 
 export type ToolContext = HvacToolContext;
 
@@ -55,6 +58,16 @@ export const RUNTIMES: Record<string, VerticalRuntime> = {
     deskOpen: clinicDeskOpen,
     onEndOfCall: async (ctx, call, endedReason) => ((await maybeClinicTextBack(ctx, call, endedReason)) ? "text_back" : null),
     simulateMissedCall: simulateClinicMissedCall,
+  },
+  fintech: {
+    id: "fintech",
+    isTool: isFintechTool,
+    execute: executeFintechTool,
+    outcomeFor: fintechOutcome,
+    callerFromTool: fintechCaller,
+    deskOpen: fintechDeskOpen,
+    onEndOfCall: async () => null,
+    simulateMissedCall: async () => ({ ok: false, message: "Use the reminder button on the Wrenline board." }),
   },
 };
 

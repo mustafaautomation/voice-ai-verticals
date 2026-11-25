@@ -60,6 +60,28 @@ VERTICAL=clinic PUBLIC_BASE_URL=https://clinic.quvantic.com npm run vapi:sync
 
 Tool URLs are `https://clinic.quvantic.com/v/clinic/vapi/...`. Put the new assistant id in `VAPI_CLINIC_ASSISTANT_ID`. Model `openai/gpt-oss-120b`, voice Clara, same as HVAC. Add `clinic.quvantic.com` on the Vercel project `voice-ai-verticals`; the default `VERTICAL_HOSTS` already maps it.
 
+### Wrenline card support
+
+Portfolio demo. Fictional neobank. Not a bank, not a creditor, and not FDIC insured. Intended host: **https://fintech.quvantic.com**. Local path: http://127.0.0.1:4317/v/fintech.
+
+The agent checks name, last four, and date of birth or a demo app code before it reads a balance. Full card numbers, CVVs, PINs, and passwords are refused and redacted. A spouse or anyone else does not get the account. Past-due talks start with a mini-Miranda. Cease-contact stops debt discussion. Hardship and promise-to-pay do not charge a card. The Cases tab can start a simulated outbound reminder, which is still a browser call and includes the disclosure.
+
+![Wrenline home](docs/screenshots/fintech-home.png)
+
+![Cases](docs/screenshots/fintech-board.png)
+
+![Accounts](docs/screenshots/fintech-accounts.png)
+
+![Reminder call](docs/screenshots/fintech-call.png)
+
+![Wrenline walkthrough](docs/fintech-demo.gif)
+
+```bash
+VERTICAL=fintech PUBLIC_BASE_URL=https://fintech.quvantic.com npm run vapi:sync
+```
+
+Tool URLs are `https://fintech.quvantic.com/v/fintech/vapi/...`. Put the assistant id in `VAPI_FINTECH_ASSISTANT_ID`. Model `openai/gpt-oss-120b`, voice Clara. `VERTICAL_HOSTS` already maps `fintech.quvantic.com`.
+
 ## Architecture
 
 ```mermaid
@@ -265,6 +287,7 @@ Copy `.env.example`. Never commit `.env`.
 | `VAPI_PUBLIC_KEY` | fallback | Returned only after the limit check. |
 | `VAPI_ASSISTANT_ID` | for HVAC browser calls | Created by `npm run vapi:sync`. |
 | `VAPI_CLINIC_ASSISTANT_ID` | for clinic browser calls | Created by `VERTICAL=clinic npm run vapi:sync`. |
+| `VAPI_FINTECH_ASSISTANT_ID` | for Wrenline browser calls | Created by `VERTICAL=fintech npm run vapi:sync`. |
 | `VAPI_MODEL_PROVIDER` | no | `groq` (default) or `google`. |
 | `VAPI_MODEL` | no | Default `openai/gpt-oss-120b`. |
 | `PUBLIC_BASE_URL` | yes for sync | URL Vapi can reach. |

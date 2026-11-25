@@ -8,10 +8,12 @@ import { SmsStore } from "./store/sms.js";
 import { BRAND, HVAC_ID } from "./verticals/hvac/brand.js";
 import { dispatchSms, safetySms, textBackSms, confirmationSms } from "./verticals/hvac/messages.js";
 import { seedClinicIfEmpty } from "./verticals/clinic/seed.js";
+import { seedFintechDesk } from "./verticals/fintech/seed.js";
 
 export function seedIfEmpty(db: SqliteDatabase, now: Date): void {
   seedHvacIfEmpty(db, now);
   seedClinicIfEmpty(db, now);
+  seedFintechDesk(db, now);
 }
 
 function seedHvacIfEmpty(db: SqliteDatabase, now: Date): void {

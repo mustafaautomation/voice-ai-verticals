@@ -19,6 +19,7 @@ export type CallOutcome =
   | "off_topic"
   | "refused"
   | "refill"
+  | "serviced"
   | "completed"
   | "no_booking";
 
@@ -34,6 +35,7 @@ const RANK: Record<CallOutcome, number> = {
   cancelled: 60,
   rescheduled: 70,
   refill: 75,
+  serviced: 78,
   booked: 80,
   escalated: 90,
 };

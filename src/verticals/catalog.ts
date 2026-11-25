@@ -33,10 +33,12 @@ export const CATALOG: VerticalListing[] = [
   {
     id: "fintech",
     name: "Fintech support & collections",
-    industry: "Financial services",
-    status: "coming_soon",
-    summary: "Hardship, promise-to-pay, and dispute intake. The demo stores no card numbers.",
-    planned: "Identity check with a fake last-4, then a scripted hardship or dispute path.",
+    industry: "Card support",
+    status: "live",
+    summary: "Fictional Wrenline card desk. Last-four verification, disputes, freezes, and FDCPA-minded collections. No real payments.",
+    planned: "Live in this repo.",
+    href: "/v/fintech",
+    cta: "Open the Wrenline demo",
   },
   {
     id: "legal",

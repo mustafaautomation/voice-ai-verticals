@@ -148,6 +148,48 @@ export function migrate(db: SqliteDatabase): void {
       summary TEXT NOT NULL,
       created_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS fintech_accounts (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      dob TEXT NOT NULL,
+      last4 TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      phone_digits TEXT NOT NULL,
+      balance_cents INTEGER NOT NULL,
+      past_due_cents INTEGER NOT NULL,
+      card_status TEXT NOT NULL,
+      cease_contact INTEGER NOT NULL DEFAULT 0,
+      otp_code TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS fintech_txns (
+      id TEXT PRIMARY KEY,
+      account_id TEXT NOT NULL,
+      posted_on TEXT NOT NULL,
+      merchant TEXT NOT NULL,
+      amount_cents INTEGER NOT NULL,
+      flagged INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS fintech_cases (
+      id TEXT PRIMARY KEY,
+      account_id TEXT NOT NULL,
+      kind TEXT NOT NULL,
+      status TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS fintech_audit (
+      id TEXT PRIMARY KEY,
+      action TEXT NOT NULL,
+      subject_id TEXT,
+      ok INTEGER NOT NULL,
+      summary TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
   `);
 }
 

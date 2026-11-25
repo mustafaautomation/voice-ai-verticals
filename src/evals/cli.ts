@@ -1,3 +1,5 @@
+import { FINTECH_SCENARIOS } from "../verticals/fintech/scenarios.js";
+import { fintechScenarioPassed, runFintechScenario } from "../verticals/fintech/eval.js";
 import { CLINIC_SCENARIOS } from "../verticals/clinic/scenarios.js";
 import { clinicScenarioPassed, runClinicScenario } from "../verticals/clinic/eval.js";
 import { HVAC_SCENARIOS } from "../verticals/hvac/scenarios.js";
@@ -15,6 +17,12 @@ for (const scenario of CLINIC_SCENARIOS) {
   const passed = clinicScenarioPassed(scenario, result);
   results.push({ id: `clinic:${scenario.id}`, passed, outcome: result.outcome, tools: result.toolNames.join(",") });
   console.log(`${passed ? "ok" : "FAIL"}  clinic:${scenario.id}  outcome=${result.outcome} tools=${result.toolNames.join(",")}`);
+}
+for (const scenario of FINTECH_SCENARIOS) {
+  const result = await runFintechScenario(scenario);
+  const passed = fintechScenarioPassed(scenario, result);
+  results.push({ id: `fintech:${scenario.id}`, passed, outcome: result.outcome, tools: result.toolNames.join(",") });
+  console.log(`${passed ? "ok" : "FAIL"}  fintech:${scenario.id}  outcome=${result.outcome} tools=${result.toolNames.join(",")}`);
 }
 const failed = results.filter((result) => !result.passed);
 if (failed.length) {

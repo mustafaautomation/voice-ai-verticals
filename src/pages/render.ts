@@ -24,6 +24,7 @@ export function outcomeLabel(outcome: string): string {
     off_topic: "Declined",
     refused: "Refused",
     refill: "Refill queued",
+    serviced: "Handled",
     completed: "Completed",
     no_booking: "No booking",
   };
@@ -76,6 +77,7 @@ export function renderLanding(): string {
       <nav>
         <a href="/v/hvac">HVAC demo</a>
         <a href="/v/clinic">Clinic demo</a>
+        <a href="/v/fintech">Wrenline demo</a>
         <a href="/v/hvac/board">Dispatch board</a>
         <a href="https://github.com/mustafaautomation">GitHub</a>
       </nav>
@@ -88,6 +90,7 @@ export function renderLanding(): string {
         <div class="hero-actions">
           <a class="button" href="/v/hvac">Talk to Fennwick Comfort</a>
           <a class="button ghost" href="/v/clinic">Talk to Lindenmere</a>
+          <a class="button ghost" href="/v/fintech">Talk to Wrenline</a>
         </div>
       </section>
       <section class="catalog" aria-label="Verticals">

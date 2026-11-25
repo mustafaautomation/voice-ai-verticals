@@ -12,6 +12,9 @@ import { getRuntime, toolContext } from "../verticals/registry.js";
 import { renderBoard, renderCall, renderHvacHome, renderLanding, renderNotFound } from "./render.js";
 import { renderClinicCall, renderClinicDesk, renderClinicHome, type ClinicDesk } from "./clinic-render.js";
 import { ClinicStore } from "../verticals/clinic/store.js";
+import { renderFintechCall, renderFintechDesk, renderFintechHome, type FintechDesk } from "./fintech-render.js";
+import { FintechStore } from "../verticals/fintech/store.js";
+import { simulateReminder } from "../verticals/fintech/runtime.js";
 
 const missedSchema = z.object({
   name: z.string().max(120).optional().default(""),
@@ -26,6 +29,7 @@ export async function registerPageRoutes(
     const hostVertical = verticalForHost(request.hostname, deps.config.verticalHosts);
     if (hostVertical === "hvac") return reply.type("text/html").send(renderHvacHome(linkBase(request, deps.config, "hvac")));
     if (hostVertical === "clinic") return reply.type("text/html").send(renderClinicHome(linkBase(request, deps.config, "clinic")));
+    if (hostVertical === "fintech") return reply.type("text/html").send(renderFintechHome(linkBase(request, deps.config, "fintech")));
     return reply.type("text/html").send(renderLanding());
   });
   app.get("/platform", async (_request, reply) => reply.type("text/html").send(renderLanding()));
@@ -33,6 +37,8 @@ export async function registerPageRoutes(
   app.get("/v/hvac/", async (_request, reply) => reply.redirect("/v/hvac"));
   app.get("/v/clinic", async (request, reply) => reply.type("text/html").send(renderClinicHome(linkBase(request, deps.config, "clinic"))));
   app.get("/v/clinic/", async (_request, reply) => reply.redirect("/v/clinic"));
+  app.get("/v/fintech", async (request, reply) => reply.type("text/html").send(renderFintechHome(linkBase(request, deps.config, "fintech"))));
+  app.get("/v/fintech/", async (_request, reply) => reply.redirect("/v/fintech"));
 
   for (const tab of ["board", "calls", "messages", "customers"] as const) {
     app.get(`/v/hvac/${tab}`, async (request, reply) => {
@@ -113,6 +119,40 @@ export async function registerPageRoutes(
     if (!result.ok) return reply.redirect(`${base}/messages?notice=${encodeURIComponent(result.message)}`);
     return reply.redirect(`${base}/messages?notice=Missed-call text queued in the demo inbox.`);
   });
+
+  for (const tab of ["board", "calls", "messages", "accounts", "audit"] as const) {
+    app.get(`/v/fintech/${tab}`, async (request, reply) => {
+      const query = typeof (request.query as { q?: string }).q === "string" ? (request.query as { q: string }).q : "";
+      const notice = typeof (request.query as { notice?: string }).notice === "string" ? (request.query as { notice: string }).notice : "";
+      const base = linkBase(request, deps.config, "fintech");
+      return reply.type("text/html").send(renderFintechDesk(base, tab, loadFintech(deps.db, tab === "calls" ? query : ""), query, notice));
+    });
+  }
+  app.get("/v/fintech/calls/:id", async (request, reply) => {
+    const id = (request.params as { id: string }).id;
+    const calls = new CallStore(deps.db);
+    const call = calls.getById(id);
+    const base = linkBase(request, deps.config, "fintech");
+    if (!call || call.verticalId !== "fintech") return reply.code(404).type("text/html").send(renderNotFound(base));
+    return reply.type("text/html").send(renderFintechCall(base, call, calls.listToolCalls(call.id)));
+  });
+  app.post("/v/fintech/demo/reminder", async (request, reply) => {
+    const base = linkBase(request, deps.config, "fintech");
+    const result = await simulateReminder(
+      toolContext({
+        db: deps.db,
+        sms: deps.sms,
+        fromNumber: deps.config.smsFromNumber,
+        onCallNumber: deps.config.onCallNumber,
+        transferNumber: deps.config.transferNumber,
+        now: deps.now(),
+        callRowId: null,
+      }),
+      "acct_maya",
+    );
+    if (!result.ok) return reply.redirect(`${base}/board?notice=${encodeURIComponent(result.message)}`);
+    return reply.redirect(`${base}/calls/${result.callId}`);
+  });
 }
 
 export function linkBase(request: FastifyRequest, config: AppConfig, verticalId: string): string {
@@ -128,6 +168,17 @@ function loadClinic(db: SqliteDatabase, callQuery: string): ClinicDesk {
     patients: clinic.listPatients(),
     refills: clinic.listRefills(),
     audit: clinic.listAudit(),
+  };
+}
+
+function loadFintech(db: SqliteDatabase, callQuery: string): FintechDesk {
+  const fintech = new FintechStore(db);
+  return {
+    accounts: fintech.listAccounts(),
+    cases: fintech.listCases(),
+    calls: new CallStore(db).list("fintech", callQuery),
+    messages: new SmsStore(db).list("fintech"),
+    audit: fintech.listAudit(),
   };
 }
 
