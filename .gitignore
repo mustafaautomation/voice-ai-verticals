@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+data/*.sqlite
+data/*.sqlite-*
+data/*.sqlite-journal
+.env
+.env.local
+playwright-report/
+test-results/
+blob-report/
+.DS_Store
+*.log
+.vercel
