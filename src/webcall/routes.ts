@@ -60,7 +60,7 @@ export async function registerWebCallRoutes(app: FastifyInstance, deps: WebCallD
   app.post("/v/:verticalId/api/call-token", async (request, reply) => {
     reply.header("cache-control", "no-store");
     const verticalId = (request.params as { verticalId?: string }).verticalId ?? "";
-    if (verticalId !== "hvac" && verticalId !== "clinic" && verticalId !== "fintech") return reply.code(404).send({ error: "unknown_vertical" });
+    if (verticalId !== "hvac" && verticalId !== "clinic" && verticalId !== "fintech" && verticalId !== "legal") return reply.code(404).send({ error: "unknown_vertical" });
     const assistantId = deps?.assistants[verticalId];
     if (!deps || !assistantId) {
       return reply.code(503).send({ error: "web_calls_disabled", message: "Browser calls are not configured on this server." });

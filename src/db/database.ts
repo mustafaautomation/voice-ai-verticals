@@ -190,6 +190,50 @@ export function migrate(db: SqliteDatabase): void {
       summary TEXT NOT NULL,
       created_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS legal_parties (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      side TEXT NOT NULL,
+      matter_label TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS legal_matters (
+      id TEXT PRIMARY KEY,
+      caller_name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      practice TEXT NOT NULL,
+      opposing TEXT NOT NULL DEFAULT '',
+      incident_date TEXT NOT NULL DEFAULT '',
+      jurisdiction TEXT NOT NULL DEFAULT '',
+      summary TEXT NOT NULL,
+      status TEXT NOT NULL,
+      urgent INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS legal_consults (
+      id TEXT PRIMARY KEY,
+      matter_id TEXT NOT NULL,
+      attorney_id TEXT NOT NULL,
+      consult_type TEXT NOT NULL,
+      starts_at TEXT NOT NULL,
+      ends_at TEXT NOT NULL,
+      status TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS legal_attorney_start
+      ON legal_consults(attorney_id, starts_at) WHERE status = 'scheduled';
+
+    CREATE TABLE IF NOT EXISTS legal_audit (
+      id TEXT PRIMARY KEY,
+      action TEXT NOT NULL,
+      subject_id TEXT,
+      ok INTEGER NOT NULL,
+      summary TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
   `);
 }
 

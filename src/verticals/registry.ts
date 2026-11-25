@@ -24,6 +24,9 @@ import { isClinicTool } from "./clinic/schemas.js";
 import { isFintechTool } from "./fintech/schemas.js";
 import { isDeskOpen as fintechDeskOpen } from "./fintech/brand.js";
 import { executeFintechTool, fintechCaller, fintechOutcome } from "./fintech/runtime.js";
+import { isLegalTool } from "./legal/schemas.js";
+import { isDeskOpen as legalDeskOpen } from "./legal/brand.js";
+import { executeLegalTool, legalCaller, legalOutcome } from "./legal/runtime.js";
 
 export type ToolContext = HvacToolContext;
 
@@ -68,6 +71,16 @@ export const RUNTIMES: Record<string, VerticalRuntime> = {
     deskOpen: fintechDeskOpen,
     onEndOfCall: async () => null,
     simulateMissedCall: async () => ({ ok: false, message: "Use the reminder button on the Wrenline board." }),
+  },
+  legal: {
+    id: "legal",
+    isTool: isLegalTool,
+    execute: executeLegalTool,
+    outcomeFor: legalOutcome,
+    callerFromTool: legalCaller,
+    deskOpen: legalDeskOpen,
+    onEndOfCall: async () => null,
+    simulateMissedCall: async () => ({ ok: false, message: "Use the intake summary button on the Quillmere board." }),
   },
 };
 

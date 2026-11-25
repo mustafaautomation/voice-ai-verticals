@@ -15,6 +15,9 @@ import { ClinicStore } from "../verticals/clinic/store.js";
 import { renderFintechCall, renderFintechDesk, renderFintechHome, type FintechDesk } from "./fintech-render.js";
 import { FintechStore } from "../verticals/fintech/store.js";
 import { simulateReminder } from "../verticals/fintech/runtime.js";
+import { renderLegalCall, renderLegalDesk, renderLegalHome, type LegalDesk } from "./legal-render.js";
+import { LegalStore } from "../verticals/legal/store.js";
+import { executeLegalTool } from "../verticals/legal/runtime.js";
 
 const missedSchema = z.object({
   name: z.string().max(120).optional().default(""),
@@ -30,6 +33,7 @@ export async function registerPageRoutes(
     if (hostVertical === "hvac") return reply.type("text/html").send(renderHvacHome(linkBase(request, deps.config, "hvac")));
     if (hostVertical === "clinic") return reply.type("text/html").send(renderClinicHome(linkBase(request, deps.config, "clinic")));
     if (hostVertical === "fintech") return reply.type("text/html").send(renderFintechHome(linkBase(request, deps.config, "fintech")));
+    if (hostVertical === "legal") return reply.type("text/html").send(renderLegalHome(linkBase(request, deps.config, "legal")));
     return reply.type("text/html").send(renderLanding());
   });
   app.get("/platform", async (_request, reply) => reply.type("text/html").send(renderLanding()));
@@ -39,6 +43,8 @@ export async function registerPageRoutes(
   app.get("/v/clinic/", async (_request, reply) => reply.redirect("/v/clinic"));
   app.get("/v/fintech", async (request, reply) => reply.type("text/html").send(renderFintechHome(linkBase(request, deps.config, "fintech"))));
   app.get("/v/fintech/", async (_request, reply) => reply.redirect("/v/fintech"));
+  app.get("/v/legal", async (request, reply) => reply.type("text/html").send(renderLegalHome(linkBase(request, deps.config, "legal"))));
+  app.get("/v/legal/", async (_request, reply) => reply.redirect("/v/legal"));
 
   for (const tab of ["board", "calls", "messages", "customers"] as const) {
     app.get(`/v/hvac/${tab}`, async (request, reply) => {
@@ -153,6 +159,41 @@ export async function registerPageRoutes(
     if (!result.ok) return reply.redirect(`${base}/board?notice=${encodeURIComponent(result.message)}`);
     return reply.redirect(`${base}/calls/${result.callId}`);
   });
+
+  for (const tab of ["board", "calls", "messages", "contacts", "audit"] as const) {
+    app.get(`/v/legal/${tab}`, async (request, reply) => {
+      const query = typeof (request.query as { q?: string }).q === "string" ? (request.query as { q: string }).q : "";
+      const notice = typeof (request.query as { notice?: string }).notice === "string" ? (request.query as { notice: string }).notice : "";
+      const base = linkBase(request, deps.config, "legal");
+      return reply.type("text/html").send(renderLegalDesk(base, tab, loadLegal(deps.db, tab === "calls" ? query : ""), query, notice));
+    });
+  }
+  app.get("/v/legal/calls/:id", async (request, reply) => {
+    const id = (request.params as { id: string }).id;
+    const calls = new CallStore(deps.db);
+    const call = calls.getById(id);
+    const base = linkBase(request, deps.config, "legal");
+    if (!call || call.verticalId !== "legal") return reply.code(404).type("text/html").send(renderNotFound(base));
+    return reply.type("text/html").send(renderLegalCall(base, call, calls.listToolCalls(call.id)));
+  });
+  app.post("/v/legal/demo/summary", async (request, reply) => {
+    const base = linkBase(request, deps.config, "legal");
+    const result = (await executeLegalTool(
+      "send_intake_summary",
+      { matterId: "mat_lena" },
+      toolContext({
+        db: deps.db,
+        sms: deps.sms,
+        fromNumber: deps.config.smsFromNumber,
+        onCallNumber: deps.config.onCallNumber,
+        transferNumber: deps.config.transferNumber,
+        now: deps.now(),
+        callRowId: null,
+      }),
+    )) as { ok?: boolean; message?: string };
+    if (!result.ok) return reply.redirect(`${base}/messages?notice=${encodeURIComponent(result.message ?? "Could not queue the text.")}`);
+    return reply.redirect(`${base}/messages?notice=Intake summary queued. The link does not hire the firm.`);
+  });
 }
 
 export function linkBase(request: FastifyRequest, config: AppConfig, verticalId: string): string {
@@ -179,6 +220,18 @@ function loadFintech(db: SqliteDatabase, callQuery: string): FintechDesk {
     calls: new CallStore(db).list("fintech", callQuery),
     messages: new SmsStore(db).list("fintech"),
     audit: fintech.listAudit(),
+  };
+}
+
+function loadLegal(db: SqliteDatabase, callQuery: string): LegalDesk {
+  const legal = new LegalStore(db);
+  return {
+    matters: legal.listMatters(),
+    consults: legal.listConsults(),
+    parties: legal.listParties(),
+    calls: new CallStore(db).list("legal", callQuery),
+    messages: new SmsStore(db).list("legal"),
+    audit: legal.listAudit(),
   };
 }
 

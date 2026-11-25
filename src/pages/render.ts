@@ -68,7 +68,7 @@ export function renderLanding(): string {
   }).join("");
   return shell({
     title: "Voice verticals · portfolio demos",
-    description: "A multi-vertical voice AI platform. HVAC and a fictional primary-care clinic are live.",
+    description: "A multi-vertical voice AI platform. HVAC, a clinic, a card desk, and a law-firm intake are live.",
     body: `<header class="bar">
       <a class="brand" href="/">
         <span class="mark" aria-hidden="true"></span>
@@ -78,6 +78,7 @@ export function renderLanding(): string {
         <a href="/v/hvac">HVAC demo</a>
         <a href="/v/clinic">Clinic demo</a>
         <a href="/v/fintech">Wrenline demo</a>
+        <a href="/v/legal">Legal demo</a>
         <a href="/v/hvac/board">Dispatch board</a>
         <a href="https://github.com/mustafaautomation">GitHub</a>
       </nav>
@@ -86,11 +87,12 @@ export function renderLanding(): string {
       <section class="hero platform">
         <p class="eyebrow">Portfolio demo · fictional businesses · free tiers only</p>
         <h1>One voice core. A dispatcher for every trade.</h1>
-        <p class="lede">Browser calls through Vapi, tools defined in code, and a mock back office you can click through. Fennwick Comfort answers for a made-up Duluth heating company. Lindenmere Primary Care answers for a made-up Madison clinic. The other trades are still slots in the registry.</p>
+        <p class="lede">Browser calls through Vapi, tools defined in code, and a mock back office you can click through. Fennwick Comfort answers for a made-up Duluth heating company. Lindenmere Primary Care answers for a made-up Madison clinic. Wrenline answers for a made-up Austin card. Quillmere Law answers for a made-up Denver firm and does not give legal advice. Restaurant and property management are still slots in the registry.</p>
         <div class="hero-actions">
           <a class="button" href="/v/hvac">Talk to Fennwick Comfort</a>
           <a class="button ghost" href="/v/clinic">Talk to Lindenmere</a>
           <a class="button ghost" href="/v/fintech">Talk to Wrenline</a>
+          <a class="button ghost" href="/v/legal">Talk to Quillmere</a>
         </div>
       </section>
       <section class="catalog" aria-label="Verticals">
@@ -99,11 +101,11 @@ export function renderLanding(): string {
       <section class="split">
         <article>
           <h2>What a vertical is</h2>
-          <p>A brand, a system prompt, a tool list, triage rules, and conversation evals. The core owns the call log, the webhook, the browser-call quota, and the SMS adapter. HVAC is the only runtime registered today.</p>
+          <p>A brand, a system prompt, a tool list, triage rules, and conversation evals. The core owns the call log, the webhook, the browser-call quota, and the SMS adapter. HVAC, the clinic, Wrenline, and Quillmere each register their own tools.</p>
         </article>
         <article>
           <h2>What this is not</h2>
-          <p>Not a real contractor, clinic, or lender. No paid phone number, no paid SMS, no card data. 555 numbers and Harbor Glass Avenue are invented. If you smell gas in real life, leave and call 911.</p>
+          <p>Not a real contractor, clinic, lender, or law firm. No paid phone number, no paid SMS, no card data, no legal advice. 555 numbers and Harbor Glass Avenue are invented. If you smell gas in real life, leave and call 911. If you are in danger, call 911.</p>
         </article>
       </section>
     </main>

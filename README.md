@@ -82,6 +82,28 @@ VERTICAL=fintech PUBLIC_BASE_URL=https://fintech.quvantic.com npm run vapi:sync
 
 Tool URLs are `https://fintech.quvantic.com/v/fintech/vapi/...`. Put the assistant id in `VAPI_FINTECH_ASSISTANT_ID`. Model `openai/gpt-oss-120b`, voice Clara. `VERTICAL_HOSTS` already maps `fintech.quvantic.com`.
 
+### Quillmere Law intake
+
+Portfolio demo. Fictional Denver firm. Not a law firm, not legal advice, and not an attorney-client relationship. Intended host: **https://legal.quvantic.com**. Local path: http://127.0.0.1:4317/v/legal.
+
+The agent intakes personal injury, family, employment, estate planning, and criminal defense. Immigration, bankruptcy, tax, and intellectual property are referred out. It refuses legal advice and outcome predictions. A conflict hit says the firm can't proceed and names nobody. A close screening deadline flags a priority callback and is not a statute-of-limitations opinion. Domestic violence goes to 911 and 800-799-7233. An in-custody caller pages the on-call criminal attorney without advice about talking to police. Consults are 30 minutes, free or a demo fee that is never charged. The intake text includes `https://demo.quillmere.invalid/engage/...`, which does not hire the firm.
+
+![Quillmere home](docs/screenshots/legal-home.png)
+
+![Matters](docs/screenshots/legal-board.png)
+
+![Conflicts](docs/screenshots/legal-contacts.png)
+
+![Call](docs/screenshots/legal-call.png)
+
+![Quillmere walkthrough](docs/legal-demo.gif)
+
+```bash
+VERTICAL=legal PUBLIC_BASE_URL=https://legal.quvantic.com npm run vapi:sync
+```
+
+Tool URLs are `https://legal.quvantic.com/v/legal/vapi/...`. Put the assistant id in `VAPI_LEGAL_ASSISTANT_ID`. Model `openai/gpt-oss-120b`, voice Clara. `VERTICAL_HOSTS` already maps `legal.quvantic.com`.
+
 ## Architecture
 
 ```mermaid
@@ -288,6 +310,7 @@ Copy `.env.example`. Never commit `.env`.
 | `VAPI_ASSISTANT_ID` | for HVAC browser calls | Created by `npm run vapi:sync`. |
 | `VAPI_CLINIC_ASSISTANT_ID` | for clinic browser calls | Created by `VERTICAL=clinic npm run vapi:sync`. |
 | `VAPI_FINTECH_ASSISTANT_ID` | for Wrenline browser calls | Created by `VERTICAL=fintech npm run vapi:sync`. |
+| `VAPI_LEGAL_ASSISTANT_ID` | for Quillmere browser calls | Created by `VERTICAL=legal npm run vapi:sync`. |
 | `VAPI_MODEL_PROVIDER` | no | `groq` (default) or `google`. |
 | `VAPI_MODEL` | no | Default `openai/gpt-oss-120b`. |
 | `PUBLIC_BASE_URL` | yes for sync | URL Vapi can reach. |

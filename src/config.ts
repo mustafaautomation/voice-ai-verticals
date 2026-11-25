@@ -17,6 +17,7 @@ const schema = z.object({
   VAPI_ASSISTANT_ID: z.string().optional().default(""),
   VAPI_CLINIC_ASSISTANT_ID: z.string().optional().default(""),
   VAPI_FINTECH_ASSISTANT_ID: z.string().optional().default(""),
+  VAPI_LEGAL_ASSISTANT_ID: z.string().optional().default(""),
   VAPI_MODEL_PROVIDER: z.enum(["groq", "google"]).default("groq"),
   VAPI_MODEL: z.string().min(1).default("openai/gpt-oss-120b"),
   PUBLIC_BASE_URL: z.string().url().default("http://127.0.0.1:4317"),
@@ -25,7 +26,7 @@ const schema = z.object({
   WEB_CALL_LIMIT_PER_DAY: z.coerce.number().int().min(1).max(10000).default(40),
   WEB_CALL_TOKEN_TTL_SECONDS: z.coerce.number().int().min(10).max(600).default(30),
   TRUST_PROXY_HEADERS: z.enum(["true", "false"]).default("false"),
-  VERTICAL_HOSTS: z.string().optional().default("hvac.quvantic.com=hvac,hvac.localhost=hvac,clinic.quvantic.com=clinic,clinic.localhost=clinic,fintech.quvantic.com=fintech,fintech.localhost=fintech"),
+  VERTICAL_HOSTS: z.string().optional().default("hvac.quvantic.com=hvac,hvac.localhost=hvac,clinic.quvantic.com=clinic,clinic.localhost=clinic,fintech.quvantic.com=fintech,fintech.localhost=fintech,legal.quvantic.com=legal,legal.localhost=legal"),
   SMS_PROVIDER: z.enum(["mock", "http"]).default("mock"),
   SMS_WEBHOOK_URL: z.string().url().optional().or(z.literal("")).default(""),
   SMS_WEBHOOK_TOKEN: z.string().optional().default(""),
@@ -52,6 +53,7 @@ export type AppConfig = {
   vapiAssistantId: string;
   vapiClinicAssistantId: string;
   vapiFintechAssistantId: string;
+  vapiLegalAssistantId: string;
   vapiModelProvider: "groq" | "google";
   vapiModel: string;
   publicBaseUrl: string;
@@ -97,7 +99,7 @@ export function parseConfig(env: NodeJS.ProcessEnv): AppConfig {
     throw new Error("SMS_WEBHOOK_URL is required when SMS_PROVIDER=http");
   }
   const publicBaseUrl = value.PUBLIC_BASE_URL.replace(/\/$/, "");
-  const originSource = value.WEB_CALL_ORIGINS || [publicBaseUrl, "https://hvac.quvantic.com", "https://clinic.quvantic.com", "https://fintech.quvantic.com", "https://verticals.quvantic.com"].join(",");
+  const originSource = value.WEB_CALL_ORIGINS || [publicBaseUrl, "https://hvac.quvantic.com", "https://clinic.quvantic.com", "https://fintech.quvantic.com", "https://legal.quvantic.com", "https://verticals.quvantic.com"].join(",");
   return {
     port: value.PORT,
     host: value.HOST,
@@ -113,6 +115,7 @@ export function parseConfig(env: NodeJS.ProcessEnv): AppConfig {
     vapiAssistantId: value.VAPI_ASSISTANT_ID,
     vapiClinicAssistantId: value.VAPI_CLINIC_ASSISTANT_ID,
     vapiFintechAssistantId: value.VAPI_FINTECH_ASSISTANT_ID,
+    vapiLegalAssistantId: value.VAPI_LEGAL_ASSISTANT_ID,
     vapiModelProvider: value.VAPI_MODEL_PROVIDER,
     vapiModel: value.VAPI_MODEL,
     publicBaseUrl,
