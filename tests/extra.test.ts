@@ -158,7 +158,29 @@ describe("more tool and webhook paths", () => {
       headers,
       payload: { message: { type: "tool-calls", toolCallList: [{ id: "x", function: { name: "lookup_customer", arguments: {} } }] } },
     });
-    expect(missingCall.statusCode).toBe(400);
+    expect(missingCall.statusCode).toBe(200);
+    expect(typeof missingCall.json().results[0].result).toBe("string");
+    expect(JSON.parse(missingCall.json().results[0].result as string).ok).toBe(false);
+
+    const webchat = await app.inject({
+      method: "POST",
+      url: "/v/hvac/vapi/tools/triage_issue",
+      headers,
+      payload: {
+        message: {
+          type: "tool-calls",
+          chat: { id: "chat_web_1" },
+          toolWithToolCallList: [
+            { toolCall: { id: "fc_web_1", type: "function", function: { name: "triage_issue", arguments: { description: "I smell gas", jobType: "gas_odor" } } } },
+          ],
+        },
+      },
+    });
+    expect(webchat.statusCode).toBe(200);
+    expect(typeof webchat.json().results[0].result).toBe("string");
+    const webchatResult = JSON.parse(webchat.json().results[0].result as string) as { ok: boolean; category?: string };
+    expect(webchatResult.ok).toBe(true);
+    expect(webchatResult.category).toBe("gas_odor");
 
     const unknown = await app.inject({
       method: "POST",

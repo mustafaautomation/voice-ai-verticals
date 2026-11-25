@@ -7,7 +7,7 @@ import type { SmsProvider } from "../sms/provider.js";
 import { CallStore, strongerOutcome, type CallOutcome, type CallRecord } from "../store/calls.js";
 import { getRuntime, toolContext, type ToolContext } from "../verticals/registry.js";
 import { verifyVapiSecret } from "./auth.js";
-import { directToolSchema, toolCallArguments, toolCallName, vapiEnvelopeSchema, type VapiEnvelope } from "./envelope.js";
+import { directToolSchema, envelopeCallerNumber, envelopeSessionId, listedToolCalls, toolCallArguments, toolCallName, vapiEnvelopeSchema, type VapiEnvelope } from "./envelope.js";
 
 export type VapiRouteDeps = {
   secret: string;
@@ -109,11 +109,18 @@ async function handleToolCalls(
   deps: VapiRouteDeps,
   expectedTool?: string,
 ): Promise<FastifyReply> {
-  const callId = envelope.message.call?.id;
-  if (!callId) return reply.code(400).send({ error: "invalid_payload", issues: [{ path: "message.call.id", message: "Required" }] });
-  const listed = envelope.message.toolCallList ?? envelope.message.toolCalls ?? [];
-  if (listed.length === 0) {
-    return reply.code(400).send({ error: "invalid_payload", issues: [{ path: "message.toolCallList", message: "At least one tool call is required." }] });
+  const listed = listedToolCalls(envelope.message);
+  const callId = envelopeSessionId(envelope.message) ?? (listed[0] ? `vapi_${listed[0].id}` : undefined);
+  if (!callId || listed.length === 0) {
+    // Always HTTP 200 — Vapi ignores any other status as "no result returned".
+    return reply.code(200).send({
+      results: [
+        {
+          toolCallId: listed[0]?.id ?? "unknown",
+          result: JSON.stringify({ ok: false, code: "invalid_payload", message: "A tool call id and a call or chat id are required." }),
+        },
+      ],
+    });
   }
   const results = [];
   for (const toolCall of listed) {
@@ -131,7 +138,7 @@ async function handleToolCalls(
     }
     const result = await runOne(
       verticalId,
-      { callId, toolCallId: toolCall.id, callerNumber: envelope.message.call?.customer?.number, name: name || expectedTool || "", args },
+      { callId, toolCallId: toolCall.id, callerNumber: envelopeCallerNumber(envelope.message), name: name || expectedTool || "", args },
       deps,
     );
     results.push({ toolCallId: toolCall.id, result });
@@ -202,9 +209,9 @@ function applyOutcome(
 
 async function handleEndOfCall(verticalId: string, envelope: VapiEnvelope, reply: FastifyReply, deps: VapiRouteDeps): Promise<FastifyReply> {
   const runtime = getRuntime(verticalId);
-  const vapiCallId = envelope.message.call?.id;
+  const vapiCallId = envelopeSessionId(envelope.message);
   if (!runtime || !vapiCallId) {
-    return reply.code(400).send({ error: "invalid_payload", issues: [{ path: "message.call.id", message: "Required" }] });
+    return reply.code(200).send({ ok: true, ignored: "missing_call_or_chat_id" });
   }
   const calls = new CallStore(deps.db);
   const key = `eoc:${verticalId}:${vapiCallId}`;
@@ -220,7 +227,7 @@ async function handleEndOfCall(verticalId: string, envelope: VapiEnvelope, reply
     const record = calls.ensure({
       verticalId,
       vapiCallId,
-      callerNumber: envelope.message.call?.customer?.number,
+      callerNumber: envelopeCallerNumber(envelope.message),
       afterHours: !runtime.deskOpen(now),
       now,
     });
