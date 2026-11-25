@@ -113,7 +113,7 @@ export function renderHvacHome(base: string): string {
     title: `${BRAND.name} · after-hours dispatcher`,
     description: "Talk to a fictional Duluth HVAC dispatcher. It triages gas and CO alarms, books arrival windows, and queues demo texts.",
     body: `<header class="bar hvac">
-      <a class="brand" href="${base || "/v/hvac"}">
+      <a class="brand" href="${base || "/"}">
         <span class="mark pine" aria-hidden="true"></span>
         <span><strong>${escapeHtml(BRAND.name)}</strong><small>${escapeHtml(BRAND.city)}</small></span>
       </a>
@@ -201,12 +201,12 @@ export function renderBoard(base: string, tab: "board" | "calls" | "messages" | 
     title: `${tabTitle(tab)} · ${BRAND.name}`,
     description: "Demo dispatch board for the fictional Fennwick Comfort Co.",
     body: `<header class="bar hvac">
-      <a class="brand" href="${base || "/v/hvac"}">
+      <a class="brand" href="${base || "/"}">
         <span class="mark pine" aria-hidden="true"></span>
         <span><strong>${escapeHtml(BRAND.name)}</strong><small>Dispatch board · fictional</small></span>
       </a>
       <nav>
-        <a href="${base || "/v/hvac"}">Talk</a>
+        <a href="${base || "/"}">Talk</a>
         <a href="/platform">All verticals</a>
       </nav>
     </header>

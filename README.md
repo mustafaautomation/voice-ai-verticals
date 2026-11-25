@@ -10,12 +10,11 @@ This follows the same shape as the Brightside Dental receptionist at [voice.quva
 
 ## Live links
 
-These are the deploy targets. They serve traffic only after the [go-live steps](#go-live) are done.
+Live on Vercel:
 
 - Platform landing: **https://verticals.quvantic.com**
-- HVAC demo: **https://hvac.quvantic.com**
-
-Until then, run it locally and open http://127.0.0.1:4317.
+- HVAC demo (Fennwick Comfort Co.): **https://hvac.quvantic.com**
+- Dispatch board: **https://hvac.quvantic.com/board**
 
 ## Demo
 
@@ -188,7 +187,7 @@ npm run vapi:sync
 
 With no `VAPI_API_KEY`, that prints the payload and does not call Vapi. With a key, it creates or updates the assistant named `Fennwick Comfort Co. Dispatcher`. Set `PUBLIC_BASE_URL` to a URL Vapi can reach before syncing. Tool URLs are `{PUBLIC_BASE_URL}/v/hvac/vapi/tools/<name>`. The payload sends `VAPI_WEBHOOK_SECRET` as `x-vapi-secret`. Calls are capped at 240 seconds.
 
-The model provider defaults to Groq `llama-3.3-70b-versatile` so the voice session stays on a free LLM tier. In the Vapi dashboard, add a Groq credential (free tier) and attach it to this assistant. `VAPI_MODEL_PROVIDER=google` switches the payload to Gemini if you would rather use a free Gemini key. Do not point this at a paid OpenAI model.
+The model provider defaults to Vapi's built-in Groq integration (`openai/gpt-oss-120b`) so the voice session stays on a free tier with no extra credential required. `VAPI_MODEL_PROVIDER=google` switches the payload to Gemini if you would rather use a free Gemini key. Do not point this at a paid OpenAI model.
 
 ### Browser calls
 
@@ -240,7 +239,7 @@ Copy `.env.example`. Never commit `.env`.
 | `VAPI_PUBLIC_KEY` | fallback | Returned only after the limit check. |
 | `VAPI_ASSISTANT_ID` | for browser calls | Created by `npm run vapi:sync`. |
 | `VAPI_MODEL_PROVIDER` | no | `groq` (default) or `google`. |
-| `VAPI_MODEL` | no | Default `llama-3.3-70b-versatile`. |
+| `VAPI_MODEL` | no | Default `openai/gpt-oss-120b`. |
 | `PUBLIC_BASE_URL` | yes for sync | URL Vapi can reach. |
 | `WEB_CALL_ORIGINS` | no | Comma-separated. Defaults include the two planned domains. |
 | `TRUST_PROXY_HEADERS` | on Vercel | `true` so the visitor IP comes from the proxy. |

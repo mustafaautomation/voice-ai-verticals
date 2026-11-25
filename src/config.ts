@@ -16,7 +16,7 @@ const schema = z.object({
   VAPI_PUBLIC_KEY: z.string().optional().default(""),
   VAPI_ASSISTANT_ID: z.string().optional().default(""),
   VAPI_MODEL_PROVIDER: z.enum(["groq", "google"]).default("groq"),
-  VAPI_MODEL: z.string().min(1).default("llama-3.3-70b-versatile"),
+  VAPI_MODEL: z.string().min(1).default("openai/gpt-oss-120b"),
   PUBLIC_BASE_URL: z.string().url().default("http://127.0.0.1:4317"),
   WEB_CALL_ORIGINS: z.string().optional().default(""),
   WEB_CALL_LIMIT_PER_VISITOR: z.coerce.number().int().min(1).max(100).default(3),

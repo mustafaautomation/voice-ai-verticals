@@ -35,12 +35,14 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   const now = deps.now ?? (() => new Date());
   const sms = deps.sms ?? createSms(deps.config, deps.db);
   const app = Fastify({
+    trustProxy: deps.config.trustProxyHeaders,
     logger: deps.config.logLevel === "silent" ? false : { level: deps.config.logLevel, redact: ["req.headers.x-vapi-secret", "req.headers.authorization"] },
-  });
-
-  app.addHook("onRequest", async (request) => {
-    const verticalId = verticalForHost(request.hostname, deps.config.verticalHosts);
-    request.raw.url = rewriteForVertical(verticalId, request.raw.url ?? "/");
+    rewriteUrl(request) {
+      const forwarded = deps.config.trustProxyHeaders ? request.headers["x-forwarded-host"] : undefined;
+      const rawHost = (Array.isArray(forwarded) ? forwarded[0] : forwarded)?.split(",")[0]?.trim() || request.headers.host || "";
+      const verticalId = verticalForHost(rawHost, deps.config.verticalHosts);
+      return rewriteForVertical(verticalId, request.url ?? "/");
+    },
   });
 
   await app.register(formbody);

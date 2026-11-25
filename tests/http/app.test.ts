@@ -22,11 +22,37 @@ describe("pages", () => {
     await app.close();
   });
 
-  it("serves the HVAC home on the hvac host", async () => {
-    const app = await buildApp({ config: testConfig(), db: memoryDb(), now: () => NOW });
-    const response = await app.inject({ method: "GET", url: "/", headers: { host: "hvac.quvantic.com" } });
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toContain("Leave if you smell gas");
+  it("serves clean HVAC paths on the hvac host", async () => {
+    const db = memoryDb();
+    seedIfEmpty(db, NOW);
+    const app = await buildApp({
+      config: testConfig({
+        vapiPublicKey: "pk_test",
+        vapiAssistantId: "asst_hvac",
+        webCallOrigins: ["https://hvac.quvantic.com", "https://verticals.quvantic.com"],
+      }),
+      db,
+      now: () => NOW,
+    });
+    const home = await app.inject({ method: "GET", url: "/", headers: { host: "hvac.quvantic.com" } });
+    expect(home.statusCode).toBe(200);
+    expect(home.body).toContain("Leave if you smell gas");
+    const board = await app.inject({ method: "GET", url: "/board", headers: { host: "hvac.quvantic.com" } });
+    expect(board.statusCode).toBe(200);
+    expect(board.body).toContain("Maya Chen");
+    const calls = await app.inject({ method: "GET", url: "/calls", headers: { host: "hvac.quvantic.com" } });
+    expect(calls.statusCode).toBe(200);
+    expect(calls.body).toContain("Lila Nguyen");
+    const platform = await app.inject({ method: "GET", url: "/platform", headers: { host: "hvac.quvantic.com" } });
+    expect(platform.statusCode).toBe(200);
+    expect(platform.body).toContain("One voice core.");
+    const token = await app.inject({
+      method: "POST",
+      url: "/api/call-token",
+      headers: { host: "hvac.quvantic.com", origin: "https://hvac.quvantic.com" },
+    });
+    expect(token.statusCode).toBe(200);
+    expect(token.json().mode).toBe("public-key");
     await app.close();
   });
 

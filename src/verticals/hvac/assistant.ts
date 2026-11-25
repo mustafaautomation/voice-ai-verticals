@@ -177,12 +177,12 @@ export function buildAssistant(input: {
     maxDurationSeconds: 240,
     model: {
       provider: input.provider ?? "groq",
-      model: input.model ?? "llama-3.3-70b-versatile",
+      model: input.model ?? "openai/gpt-oss-120b",
       temperature: 0.3,
       messages: [{ role: "system", content: SYSTEM_PROMPT }],
       tools: buildTools(base, input.serverUrlSecret),
     },
-    voice: { provider: "vapi", voiceId: "Paige" },
+    voice: { provider: "vapi", voiceId: "Clara" },
     transcriber: { provider: "deepgram", model: "nova-2", language: "en" },
   };
 }

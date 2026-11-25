@@ -19,7 +19,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     vapiPublicKey: "",
     vapiAssistantId: "",
     vapiModelProvider: "groq",
-    vapiModel: "llama-3.3-70b-versatile",
+    vapiModel: "openai/gpt-oss-120b",
     publicBaseUrl: "http://127.0.0.1:4317",
     webCallOrigins: ["http://127.0.0.1:4317"],
     webCallLimitPerVisitor: 3,
