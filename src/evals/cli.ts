@@ -2,6 +2,8 @@ import { FINTECH_SCENARIOS } from "../verticals/fintech/scenarios.js";
 import { fintechScenarioPassed, runFintechScenario } from "../verticals/fintech/eval.js";
 import { LEGAL_SCENARIOS } from "../verticals/legal/scenarios.js";
 import { legalScenarioPassed, runLegalScenario } from "../verticals/legal/eval.js";
+import { RESTAURANT_SCENARIOS } from "../verticals/restaurant/scenarios.js";
+import { restaurantScenarioPassed, runRestaurantScenario } from "../verticals/restaurant/eval.js";
 import { CLINIC_SCENARIOS } from "../verticals/clinic/scenarios.js";
 import { clinicScenarioPassed, runClinicScenario } from "../verticals/clinic/eval.js";
 import { HVAC_SCENARIOS } from "../verticals/hvac/scenarios.js";
@@ -31,6 +33,12 @@ for (const scenario of LEGAL_SCENARIOS) {
   const passed = legalScenarioPassed(scenario, result);
   results.push({ id: `legal:${scenario.id}`, passed, outcome: result.outcome, tools: result.toolNames.join(",") });
   console.log(`${passed ? "ok" : "FAIL"}  legal:${scenario.id}  outcome=${result.outcome} tools=${result.toolNames.join(",")}`);
+}
+for (const scenario of RESTAURANT_SCENARIOS) {
+  const result = await runRestaurantScenario(scenario);
+  const passed = restaurantScenarioPassed(scenario, result);
+  results.push({ id: `restaurant:${scenario.id}`, passed, outcome: result.outcome, tools: result.toolNames.join(",") });
+  console.log(`${passed ? "ok" : "FAIL"}  restaurant:${scenario.id}  outcome=${result.outcome} tools=${result.toolNames.join(",")}`);
 }
 const failed = results.filter((result) => !result.passed);
 if (failed.length) {

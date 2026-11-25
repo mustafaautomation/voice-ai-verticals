@@ -90,7 +90,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     await app.register(fastifyStatic, { root: join(process.cwd(), "public", "assets"), prefix: "/assets/" });
   }
 
-  app.get("/health", async () => ({ ok: true, service: "voice-ai-verticals", verticals: ["hvac", "clinic", "fintech", "legal"] }));
+  app.get("/health", async () => ({ ok: true, service: "voice-ai-verticals", verticals: ["hvac", "clinic", "fintech", "legal", "restaurant"] }));
 
   await registerPageRoutes(app, { config: deps.config, db: deps.db, sms, now });
   const config = deps.config;
@@ -105,6 +105,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   if (config.vapiClinicAssistantId) assistants.clinic = config.vapiClinicAssistantId;
   if (config.vapiFintechAssistantId) assistants.fintech = config.vapiFintechAssistantId;
   if (config.vapiLegalAssistantId) assistants.legal = config.vapiLegalAssistantId;
+  if (config.vapiRestaurantAssistantId) assistants.restaurant = config.vapiRestaurantAssistantId;
   await registerWebCallRoutes(
     app,
     auth && Object.keys(assistants).length > 0

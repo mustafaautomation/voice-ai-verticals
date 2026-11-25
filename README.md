@@ -104,6 +104,28 @@ VERTICAL=legal PUBLIC_BASE_URL=https://legal.quvantic.com npm run vapi:sync
 
 Tool URLs are `https://legal.quvantic.com/v/legal/vapi/...`. Put the assistant id in `VAPI_LEGAL_ASSISTANT_ID`. Model `openai/gpt-oss-120b`, voice Clara. `VERTICAL_HOSTS` already maps `legal.quvantic.com`.
 
+### Larkglass host stand
+
+Portfolio demo. Fictional Portland bistro. Not a restaurant and not a delivery service. Intended host: **https://restaurant.quvantic.com**. Local path: http://127.0.0.1:4317/v/restaurant.
+
+The host takes pickup and Portland delivery orders with modifiers, quotes a demo total, and puts a kitchen ticket on the board. Reservations cover parties of up to eight, half hours from 5:00 to 8:30 PM ET. Larger parties go to the manager. Allergies are written on the ticket. A dish that overlaps the allergy is held. The agent will not promise an allergen-free plate. A reaction in progress is told to call 911. Confirmation texts do not charge a card.
+
+![Larkglass home](docs/screenshots/restaurant-home.png)
+
+![Kitchen board](docs/screenshots/restaurant-board.png)
+
+![Menu](docs/screenshots/restaurant-menu.png)
+
+![Call](docs/screenshots/restaurant-call.png)
+
+![Larkglass walkthrough](docs/restaurant-demo.gif)
+
+```bash
+VERTICAL=restaurant PUBLIC_BASE_URL=https://restaurant.quvantic.com npm run vapi:sync
+```
+
+Tool URLs are `https://restaurant.quvantic.com/v/restaurant/vapi/...`. Put the assistant id in `VAPI_RESTAURANT_ASSISTANT_ID`. Model `openai/gpt-oss-120b`, voice Clara, `maxTokens` 2000. `VERTICAL_HOSTS` already maps `restaurant.quvantic.com`.
+
 ## Architecture
 
 ```mermaid
@@ -311,6 +333,7 @@ Copy `.env.example`. Never commit `.env`.
 | `VAPI_CLINIC_ASSISTANT_ID` | for clinic browser calls | Created by `VERTICAL=clinic npm run vapi:sync`. |
 | `VAPI_FINTECH_ASSISTANT_ID` | for Wrenline browser calls | Created by `VERTICAL=fintech npm run vapi:sync`. |
 | `VAPI_LEGAL_ASSISTANT_ID` | for Quillmere browser calls | Created by `VERTICAL=legal npm run vapi:sync`. |
+| `VAPI_RESTAURANT_ASSISTANT_ID` | for Larkglass browser calls | Created by `VERTICAL=restaurant npm run vapi:sync`. |
 | `VAPI_MODEL_PROVIDER` | no | `groq` (default) or `google`. |
 | `VAPI_MODEL` | no | Default `openai/gpt-oss-120b`. |
 | `PUBLIC_BASE_URL` | yes for sync | URL Vapi can reach. |

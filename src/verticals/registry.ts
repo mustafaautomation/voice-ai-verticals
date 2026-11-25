@@ -27,6 +27,9 @@ import { executeFintechTool, fintechCaller, fintechOutcome } from "./fintech/run
 import { isLegalTool } from "./legal/schemas.js";
 import { isDeskOpen as legalDeskOpen } from "./legal/brand.js";
 import { executeLegalTool, legalCaller, legalOutcome } from "./legal/runtime.js";
+import { isRestaurantTool } from "./restaurant/schemas.js";
+import { isDeskOpen as restaurantDeskOpen } from "./restaurant/brand.js";
+import { executeRestaurantTool, restaurantCaller, restaurantOutcome } from "./restaurant/runtime.js";
 
 export type ToolContext = HvacToolContext;
 
@@ -81,6 +84,16 @@ export const RUNTIMES: Record<string, VerticalRuntime> = {
     deskOpen: legalDeskOpen,
     onEndOfCall: async () => null,
     simulateMissedCall: async () => ({ ok: false, message: "Use the intake summary button on the Quillmere board." }),
+  },
+  restaurant: {
+    id: "restaurant",
+    isTool: isRestaurantTool,
+    execute: executeRestaurantTool,
+    outcomeFor: restaurantOutcome,
+    callerFromTool: restaurantCaller,
+    deskOpen: restaurantDeskOpen,
+    onEndOfCall: async () => null,
+    simulateMissedCall: async () => ({ ok: false, message: "Use the sample ticket button on the Larkglass board." }),
   },
 };
 

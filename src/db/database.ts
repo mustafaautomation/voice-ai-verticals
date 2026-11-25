@@ -234,6 +234,34 @@ export function migrate(db: SqliteDatabase): void {
       summary TEXT NOT NULL,
       created_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS restaurant_orders (
+      id TEXT PRIMARY KEY,
+      guest_name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      fulfillment TEXT NOT NULL,
+      address TEXT NOT NULL DEFAULT '',
+      lines_json TEXT NOT NULL,
+      allergy TEXT NOT NULL DEFAULT '',
+      subtotal_cents INTEGER NOT NULL,
+      fee_cents INTEGER NOT NULL,
+      tax_cents INTEGER NOT NULL,
+      total_cents INTEGER NOT NULL,
+      status TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS restaurant_reservations (
+      id TEXT PRIMARY KEY,
+      guest_name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      party_size INTEGER NOT NULL,
+      starts_at TEXT NOT NULL,
+      ends_at TEXT NOT NULL,
+      allergy TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
   `);
 }
 

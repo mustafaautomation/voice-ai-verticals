@@ -10,12 +10,14 @@ import { dispatchSms, safetySms, textBackSms, confirmationSms } from "./vertical
 import { seedClinicIfEmpty } from "./verticals/clinic/seed.js";
 import { seedFintechDesk } from "./verticals/fintech/seed.js";
 import { seedLegalDesk } from "./verticals/legal/seed.js";
+import { seedRestaurantDesk } from "./verticals/restaurant/seed.js";
 
 export function seedIfEmpty(db: SqliteDatabase, now: Date): void {
   seedHvacIfEmpty(db, now);
   seedClinicIfEmpty(db, now);
   seedFintechDesk(db, now);
   seedLegalDesk(db);
+  seedRestaurantDesk(db);
 }
 
 function seedHvacIfEmpty(db: SqliteDatabase, now: Date): void {

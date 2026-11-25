@@ -18,6 +18,8 @@ import { simulateReminder } from "../verticals/fintech/runtime.js";
 import { renderLegalCall, renderLegalDesk, renderLegalHome, type LegalDesk } from "./legal-render.js";
 import { LegalStore } from "../verticals/legal/store.js";
 import { executeLegalTool } from "../verticals/legal/runtime.js";
+import { renderRestaurantCall, renderRestaurantDesk, renderRestaurantHome, type RestaurantDesk } from "./restaurant-render.js";
+import { RestaurantStore } from "../verticals/restaurant/store.js";
 
 const missedSchema = z.object({
   name: z.string().max(120).optional().default(""),
@@ -34,6 +36,7 @@ export async function registerPageRoutes(
     if (hostVertical === "clinic") return reply.type("text/html").send(renderClinicHome(linkBase(request, deps.config, "clinic")));
     if (hostVertical === "fintech") return reply.type("text/html").send(renderFintechHome(linkBase(request, deps.config, "fintech")));
     if (hostVertical === "legal") return reply.type("text/html").send(renderLegalHome(linkBase(request, deps.config, "legal")));
+    if (hostVertical === "restaurant") return reply.type("text/html").send(renderRestaurantHome(linkBase(request, deps.config, "restaurant")));
     return reply.type("text/html").send(renderLanding());
   });
   app.get("/platform", async (_request, reply) => reply.type("text/html").send(renderLanding()));
@@ -45,6 +48,8 @@ export async function registerPageRoutes(
   app.get("/v/fintech/", async (_request, reply) => reply.redirect("/v/fintech"));
   app.get("/v/legal", async (request, reply) => reply.type("text/html").send(renderLegalHome(linkBase(request, deps.config, "legal"))));
   app.get("/v/legal/", async (_request, reply) => reply.redirect("/v/legal"));
+  app.get("/v/restaurant", async (request, reply) => reply.type("text/html").send(renderRestaurantHome(linkBase(request, deps.config, "restaurant"))));
+  app.get("/v/restaurant/", async (_request, reply) => reply.redirect("/v/restaurant"));
 
   for (const tab of ["board", "calls", "messages", "customers"] as const) {
     app.get(`/v/hvac/${tab}`, async (request, reply) => {
@@ -194,6 +199,42 @@ export async function registerPageRoutes(
     if (!result.ok) return reply.redirect(`${base}/messages?notice=${encodeURIComponent(result.message ?? "Could not queue the text.")}`);
     return reply.redirect(`${base}/messages?notice=Intake summary queued. The link does not hire the firm.`);
   });
+
+  for (const tab of ["board", "calls", "messages", "menu"] as const) {
+    app.get(`/v/restaurant/${tab}`, async (request, reply) => {
+      const query = typeof (request.query as { q?: string }).q === "string" ? (request.query as { q: string }).q : "";
+      const notice = typeof (request.query as { notice?: string }).notice === "string" ? (request.query as { notice: string }).notice : "";
+      const base = linkBase(request, deps.config, "restaurant");
+      return reply.type("text/html").send(renderRestaurantDesk(base, tab, loadRestaurant(deps.db, tab === "calls" ? query : ""), query, notice));
+    });
+  }
+  app.get("/v/restaurant/calls/:id", async (request, reply) => {
+    const id = (request.params as { id: string }).id;
+    const calls = new CallStore(deps.db);
+    const call = calls.getById(id);
+    const base = linkBase(request, deps.config, "restaurant");
+    if (!call || call.verticalId !== "restaurant") return reply.code(404).type("text/html").send(renderNotFound(base));
+    return reply.type("text/html").send(renderRestaurantCall(base, call, calls.listToolCalls(call.id)));
+  });
+  app.post("/v/restaurant/demo/ticket", async (request, reply) => {
+    const base = linkBase(request, deps.config, "restaurant");
+    const book = new RestaurantStore(deps.db);
+    book.insertTicket({
+      guestName: "Walk-in Demo",
+      phone: "2075550199",
+      fulfillment: "pickup",
+      address: "",
+      lines: [{ sku: "spritz", name: "House spritz", qty: 1, modifiers: [], cents: 800 }],
+      allergy: "",
+      subtotalCents: 800,
+      feeCents: 0,
+      taxCents: 64,
+      totalCents: 864,
+      status: "new",
+      now: deps.now(),
+    });
+    return reply.redirect(`${base}/board?notice=Sample ticket is on the board. Nothing was charged.`);
+  });
 }
 
 export function linkBase(request: FastifyRequest, config: AppConfig, verticalId: string): string {
@@ -220,6 +261,16 @@ function loadFintech(db: SqliteDatabase, callQuery: string): FintechDesk {
     calls: new CallStore(db).list("fintech", callQuery),
     messages: new SmsStore(db).list("fintech"),
     audit: fintech.listAudit(),
+  };
+}
+
+function loadRestaurant(db: SqliteDatabase, callQuery: string): RestaurantDesk {
+  const restaurant = new RestaurantStore(db);
+  return {
+    tickets: restaurant.listTickets(),
+    reservations: restaurant.listReservations(),
+    calls: new CallStore(db).list("restaurant", callQuery),
+    messages: new SmsStore(db).list("restaurant"),
   };
 }
 
