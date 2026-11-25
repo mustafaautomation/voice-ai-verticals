@@ -10,10 +10,8 @@ describe("pages", () => {
     const app = await buildApp({ config: testConfig(), db: memoryDb(), now: () => NOW });
     const landing = await app.inject({ method: "GET", url: "/" });
     expect(landing.statusCode).toBe(200);
-    expect(landing.body).toContain("Coming soon");
-    expect(landing.body).toContain("Medical clinic");
-    expect(landing.body).toContain("Fintech support");
     expect(landing.body).toContain("Open the HVAC demo");
+    expect(landing.body).toContain("Open the property demo");
     const hvac = await app.inject({ method: "GET", url: "/v/hvac" });
     expect(hvac.body).toContain("Fennwick Comfort Co.");
     expect(hvac.body).toContain("Portfolio demo");

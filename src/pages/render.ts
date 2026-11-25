@@ -68,7 +68,7 @@ export function renderLanding(): string {
   }).join("");
   return shell({
     title: "Voice verticals · portfolio demos",
-    description: "A multi-vertical voice AI platform. HVAC, a clinic, a card desk, a law-firm intake, and a bistro are live.",
+    description: "A multi-vertical voice AI platform. HVAC, a clinic, a card desk, a law-firm intake, a bistro, and a property desk are live.",
     body: `<header class="bar">
       <a class="brand" href="/">
         <span class="mark" aria-hidden="true"></span>
@@ -80,6 +80,7 @@ export function renderLanding(): string {
         <a href="/v/fintech">Wrenline demo</a>
         <a href="/v/legal">Legal demo</a>
         <a href="/v/restaurant">Larkglass demo</a>
+        <a href="/v/property">Bramblefen demo</a>
         <a href="/v/hvac/board">Dispatch board</a>
         <a href="https://github.com/mustafaautomation">GitHub</a>
       </nav>
@@ -88,13 +89,14 @@ export function renderLanding(): string {
       <section class="hero platform">
         <p class="eyebrow">Portfolio demo · fictional businesses · free tiers only</p>
         <h1>One voice core. A dispatcher for every trade.</h1>
-        <p class="lede">Browser calls through Vapi, tools defined in code, and a mock back office you can click through. Fennwick Comfort answers for a made-up Duluth heating company. Lindenmere Primary Care answers for a made-up Madison clinic. Wrenline answers for a made-up Austin card. Quillmere Law answers for a made-up Denver firm and does not give legal advice. Larkglass answers for a made-up Portland bistro and does not charge a card. Property management is still a slot in the registry.</p>
+        <p class="lede">Browser calls through Vapi, tools defined in code, and a mock back office you can click through. Fennwick Comfort answers for a made-up Duluth heating company. Lindenmere Primary Care answers for a made-up Madison clinic. Wrenline answers for a made-up Austin card. Quillmere Law answers for a made-up Denver firm and does not give legal advice. Larkglass answers for a made-up Portland bistro and does not charge a card. Bramblefen answers for a made-up Providence property manager and does not collect rent.</p>
         <div class="hero-actions">
           <a class="button" href="/v/hvac">Talk to Fennwick Comfort</a>
           <a class="button ghost" href="/v/clinic">Talk to Lindenmere</a>
           <a class="button ghost" href="/v/fintech">Talk to Wrenline</a>
           <a class="button ghost" href="/v/legal">Talk to Quillmere</a>
           <a class="button ghost" href="/v/restaurant">Talk to Larkglass</a>
+          <a class="button ghost" href="/v/property">Talk to Bramblefen</a>
         </div>
       </section>
       <section class="catalog" aria-label="Verticals">
@@ -103,11 +105,11 @@ export function renderLanding(): string {
       <section class="split">
         <article>
           <h2>What a vertical is</h2>
-          <p>A brand, a system prompt, a tool list, triage rules, and conversation evals. The core owns the call log, the webhook, the browser-call quota, and the SMS adapter. HVAC, the clinic, Wrenline, Quillmere, and Larkglass each register their own tools.</p>
+          <p>A brand, a system prompt, a tool list, triage rules, and conversation evals. The core owns the call log, the webhook, the browser-call quota, and the SMS adapter. HVAC, the clinic, Wrenline, Quillmere, Larkglass, and Bramblefen each register their own tools.</p>
         </article>
         <article>
           <h2>What this is not</h2>
-          <p>Not a real contractor, clinic, lender, law firm, or restaurant. No paid phone number, no paid SMS, no card data, no legal advice, and no real delivery. 555 numbers and Harbor Glass Avenue are invented. If you smell gas in real life, leave and call 911. If you are in danger, call 911.</p>
+          <p>Not a real contractor, clinic, lender, law firm, restaurant, or property manager. No paid phone number, no paid SMS, no card data, no legal advice, no real delivery, and no rent collection. 555 numbers and Harbor Glass Avenue are invented. If you smell gas in real life, leave and call 911. If you are in danger, call 911.</p>
         </article>
       </section>
     </main>

@@ -20,6 +20,8 @@ import { LegalStore } from "../verticals/legal/store.js";
 import { executeLegalTool } from "../verticals/legal/runtime.js";
 import { renderRestaurantCall, renderRestaurantDesk, renderRestaurantHome, type RestaurantDesk } from "./restaurant-render.js";
 import { RestaurantStore } from "../verticals/restaurant/store.js";
+import { renderPropertyCall, renderPropertyDesk, renderPropertyHome, type PropertyDesk } from "./property-render.js";
+import { PropertyStore } from "../verticals/property/store.js";
 
 const missedSchema = z.object({
   name: z.string().max(120).optional().default(""),
@@ -37,6 +39,7 @@ export async function registerPageRoutes(
     if (hostVertical === "fintech") return reply.type("text/html").send(renderFintechHome(linkBase(request, deps.config, "fintech")));
     if (hostVertical === "legal") return reply.type("text/html").send(renderLegalHome(linkBase(request, deps.config, "legal")));
     if (hostVertical === "restaurant") return reply.type("text/html").send(renderRestaurantHome(linkBase(request, deps.config, "restaurant")));
+    if (hostVertical === "property") return reply.type("text/html").send(renderPropertyHome(linkBase(request, deps.config, "property")));
     return reply.type("text/html").send(renderLanding());
   });
   app.get("/platform", async (_request, reply) => reply.type("text/html").send(renderLanding()));
@@ -50,6 +53,8 @@ export async function registerPageRoutes(
   app.get("/v/legal/", async (_request, reply) => reply.redirect("/v/legal"));
   app.get("/v/restaurant", async (request, reply) => reply.type("text/html").send(renderRestaurantHome(linkBase(request, deps.config, "restaurant"))));
   app.get("/v/restaurant/", async (_request, reply) => reply.redirect("/v/restaurant"));
+  app.get("/v/property", async (request, reply) => reply.type("text/html").send(renderPropertyHome(linkBase(request, deps.config, "property"))));
+  app.get("/v/property/", async (_request, reply) => reply.redirect("/v/property"));
 
   for (const tab of ["board", "calls", "messages", "customers"] as const) {
     app.get(`/v/hvac/${tab}`, async (request, reply) => {
@@ -235,6 +240,36 @@ export async function registerPageRoutes(
     });
     return reply.redirect(`${base}/board?notice=Sample ticket is on the board. Nothing was charged.`);
   });
+
+  for (const tab of ["board", "tours", "calls", "messages"] as const) {
+    app.get(`/v/property/${tab}`, async (request, reply) => {
+      const query = typeof (request.query as { q?: string }).q === "string" ? (request.query as { q: string }).q : "";
+      const notice = typeof (request.query as { notice?: string }).notice === "string" ? (request.query as { notice: string }).notice : "";
+      const base = linkBase(request, deps.config, "property");
+      return reply.type("text/html").send(renderPropertyDesk(base, tab, loadProperty(deps.db, tab === "calls" ? query : ""), query, notice));
+    });
+  }
+  app.get("/v/property/calls/:id", async (request, reply) => {
+    const id = (request.params as { id: string }).id;
+    const calls = new CallStore(deps.db);
+    const call = calls.getById(id);
+    const base = linkBase(request, deps.config, "property");
+    if (!call || call.verticalId !== "property") return reply.code(404).type("text/html").send(renderNotFound(base));
+    return reply.type("text/html").send(renderPropertyCall(base, call, calls.listToolCalls(call.id)));
+  });
+  app.post("/v/property/demo/ticket", async (request, reply) => {
+    const base = linkBase(request, deps.config, "property");
+    new PropertyStore(deps.db).insertTicket({
+      callerName: "Sample drip",
+      unitId: "GM-110",
+      category: "routine",
+      priority: "routine",
+      summary: "Sample drip ticket. Nothing was dispatched.",
+      status: "queued",
+      now: deps.now(),
+    });
+    return reply.redirect(`${base}/board?notice=Sample drip is on the board.`);
+  });
 }
 
 export function linkBase(request: FastifyRequest, config: AppConfig, verticalId: string): string {
@@ -261,6 +296,16 @@ function loadFintech(db: SqliteDatabase, callQuery: string): FintechDesk {
     calls: new CallStore(db).list("fintech", callQuery),
     messages: new SmsStore(db).list("fintech"),
     audit: fintech.listAudit(),
+  };
+}
+
+function loadProperty(db: SqliteDatabase, callQuery: string): PropertyDesk {
+  const property = new PropertyStore(db);
+  return {
+    tickets: property.listTickets(),
+    tours: property.listTours(),
+    calls: new CallStore(db).list("property", callQuery),
+    messages: new SmsStore(db).list("property"),
   };
 }
 

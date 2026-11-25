@@ -3,6 +3,7 @@ import { buildClinicAssistant } from "../verticals/clinic/assistant.js";
 import { buildFintechAssistant } from "../verticals/fintech/assistant.js";
 import { buildLegalAssistant } from "../verticals/legal/assistant.js";
 import { buildRestaurantAssistant } from "../verticals/restaurant/assistant.js";
+import { buildPropertyAssistant } from "../verticals/property/assistant.js";
 
 type FetchImpl = typeof fetch;
 
@@ -20,7 +21,7 @@ export async function syncAssistant(input: {
   serverUrlSecret?: string;
   provider?: "groq" | "google";
   model?: string;
-  vertical?: "hvac" | "clinic" | "fintech" | "legal" | "restaurant";
+  vertical?: "hvac" | "clinic" | "fintech" | "legal" | "restaurant" | "property";
   fetchImpl?: FetchImpl;
 }): Promise<SyncResult> {
   const built = {
@@ -38,7 +39,9 @@ export async function syncAssistant(input: {
           ? buildLegalAssistant(built)
           : input.vertical === "restaurant"
             ? buildRestaurantAssistant(built)
-            : buildAssistant(built);
+            : input.vertical === "property"
+              ? buildPropertyAssistant(built)
+              : buildAssistant(built);
   if (!input.apiKey) return { mode: "dry-run", payload };
   const fetchImpl = input.fetchImpl ?? fetch;
   const headers = { authorization: `Bearer ${input.apiKey}`, "content-type": "application/json" };

@@ -126,6 +126,28 @@ VERTICAL=restaurant PUBLIC_BASE_URL=https://restaurant.quvantic.com npm run vapi
 
 Tool URLs are `https://restaurant.quvantic.com/v/restaurant/vapi/...`. Put the assistant id in `VAPI_RESTAURANT_ASSISTANT_ID`. Model `openai/gpt-oss-120b`, voice Clara, `maxTokens` 2000. `VERTICAL_HOSTS` already maps `restaurant.quvantic.com`.
 
+### Bramblefen property desk
+
+Portfolio demo. Fictional Providence property manager. Not a landlord and not a payment processor. Intended host: **https://property.quvantic.com**. Local path: http://127.0.0.1:4317/v/property.
+
+Gas and carbon monoxide send the caller outside and to 911. Flooding, no heat, and lockouts page the on-call resident and land on the ticket board. Routine drips wait for the office. Residents match with a name, unit, and date of birth or a 4-digit portal code. A neighbor does not learn who lives in a unit. Prospects book tours of vacant units. Listed rent is not a charge. The portal text does not take a card.
+
+![Bramblefen home](docs/screenshots/property-home.png)
+
+![Tickets](docs/screenshots/property-board.png)
+
+![Tours](docs/screenshots/property-tours.png)
+
+![Call](docs/screenshots/property-call.png)
+
+![Bramblefen walkthrough](docs/property-demo.gif)
+
+```bash
+VERTICAL=property PUBLIC_BASE_URL=https://property.quvantic.com npm run vapi:sync
+```
+
+Tool URLs are `https://property.quvantic.com/v/property/vapi/...`. Put the assistant id in `VAPI_PROPERTY_ASSISTANT_ID`. Model `openai/gpt-oss-120b`, voice Clara, `maxTokens` 2000. `VERTICAL_HOSTS` already maps `property.quvantic.com`.
+
 ## Architecture
 
 ```mermaid
@@ -334,6 +356,7 @@ Copy `.env.example`. Never commit `.env`.
 | `VAPI_FINTECH_ASSISTANT_ID` | for Wrenline browser calls | Created by `VERTICAL=fintech npm run vapi:sync`. |
 | `VAPI_LEGAL_ASSISTANT_ID` | for Quillmere browser calls | Created by `VERTICAL=legal npm run vapi:sync`. |
 | `VAPI_RESTAURANT_ASSISTANT_ID` | for Larkglass browser calls | Created by `VERTICAL=restaurant npm run vapi:sync`. |
+| `VAPI_PROPERTY_ASSISTANT_ID` | for Bramblefen browser calls | Created by `VERTICAL=property npm run vapi:sync`. |
 | `VAPI_MODEL_PROVIDER` | no | `groq` (default) or `google`. |
 | `VAPI_MODEL` | no | Default `openai/gpt-oss-120b`. |
 | `PUBLIC_BASE_URL` | yes for sync | URL Vapi can reach. |

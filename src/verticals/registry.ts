@@ -30,6 +30,9 @@ import { executeLegalTool, legalCaller, legalOutcome } from "./legal/runtime.js"
 import { isRestaurantTool } from "./restaurant/schemas.js";
 import { isDeskOpen as restaurantDeskOpen } from "./restaurant/brand.js";
 import { executeRestaurantTool, restaurantCaller, restaurantOutcome } from "./restaurant/runtime.js";
+import { isPropertyTool } from "./property/schemas.js";
+import { isDeskOpen as propertyDeskOpen } from "./property/brand.js";
+import { executePropertyTool, propertyCaller, propertyOutcome } from "./property/runtime.js";
 
 export type ToolContext = HvacToolContext;
 
@@ -94,6 +97,16 @@ export const RUNTIMES: Record<string, VerticalRuntime> = {
     deskOpen: restaurantDeskOpen,
     onEndOfCall: async () => null,
     simulateMissedCall: async () => ({ ok: false, message: "Use the sample ticket button on the Larkglass board." }),
+  },
+  property: {
+    id: "property",
+    isTool: isPropertyTool,
+    execute: executePropertyTool,
+    outcomeFor: propertyOutcome,
+    callerFromTool: propertyCaller,
+    deskOpen: propertyDeskOpen,
+    onEndOfCall: async () => null,
+    simulateMissedCall: async () => ({ ok: false, message: "Use the sample drip button on the Bramblefen board." }),
   },
 };
 

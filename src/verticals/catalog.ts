@@ -64,8 +64,10 @@ export const CATALOG: VerticalListing[] = [
     id: "property",
     name: "Property management",
     industry: "Residential operations",
-    status: "coming_soon",
-    summary: "After-hours maintenance: active leak versus a routine work order.",
-    planned: "Vendor dispatch for emergencies, next-day windows for the rest.",
+    status: "live",
+    summary: "Fictional Bramblefen desk in Providence. Gas to 911, emergency tickets, tours, and a portal that does not take rent.",
+    planned: "Live in this repo.",
+    href: "/v/property",
+    cta: "Open the property demo",
   },
 ];

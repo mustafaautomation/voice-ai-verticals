@@ -11,6 +11,7 @@ import { seedClinicIfEmpty } from "./verticals/clinic/seed.js";
 import { seedFintechDesk } from "./verticals/fintech/seed.js";
 import { seedLegalDesk } from "./verticals/legal/seed.js";
 import { seedRestaurantDesk } from "./verticals/restaurant/seed.js";
+import { seedPropertyDesk } from "./verticals/property/seed.js";
 
 export function seedIfEmpty(db: SqliteDatabase, now: Date): void {
   seedHvacIfEmpty(db, now);
@@ -18,6 +19,7 @@ export function seedIfEmpty(db: SqliteDatabase, now: Date): void {
   seedFintechDesk(db, now);
   seedLegalDesk(db);
   seedRestaurantDesk(db);
+  seedPropertyDesk(db);
 }
 
 function seedHvacIfEmpty(db: SqliteDatabase, now: Date): void {

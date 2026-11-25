@@ -262,6 +262,37 @@ export function migrate(db: SqliteDatabase): void {
       status TEXT NOT NULL,
       created_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS property_tenants (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      unit_id TEXT NOT NULL,
+      dob TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      portal_code TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS property_tickets (
+      id TEXT PRIMARY KEY,
+      caller_name TEXT NOT NULL,
+      unit_id TEXT NOT NULL,
+      category TEXT NOT NULL,
+      priority TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      status TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS property_tours (
+      id TEXT PRIMARY KEY,
+      prospect_name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      unit_id TEXT NOT NULL,
+      starts_at TEXT NOT NULL,
+      ends_at TEXT NOT NULL,
+      status TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
   `);
 }
 

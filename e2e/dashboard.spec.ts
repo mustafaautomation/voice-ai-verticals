@@ -3,8 +3,8 @@ import { expect, test } from "@playwright/test";
 test("platform landing and HVAC page", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "One voice core. A dispatcher for every trade." })).toBeVisible();
-  await expect(page.getByText("Coming soon").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Open the HVAC demo" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open the property demo" })).toBeVisible();
   await page.screenshot({ path: "docs/screenshots/platform-landing.png", fullPage: true });
 
   await page.getByRole("link", { name: "Open the HVAC demo" }).click();
