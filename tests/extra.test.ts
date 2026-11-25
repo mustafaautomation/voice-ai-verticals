@@ -182,6 +182,27 @@ describe("more tool and webhook paths", () => {
     expect(webchatResult.ok).toBe(true);
     expect(webchatResult.category).toBe("gas_odor");
 
+    for (const [vertical, tool, args] of [
+      ["clinic", "triage_symptoms", { description: "I have a mild cough" }],
+      ["fintech", "transfer_to_human", { reason: "I need a person." }],
+    ] as const) {
+      const shared = await app.inject({
+        method: "POST",
+        url: `/v/${vertical}/vapi/tools/${tool}`,
+        headers,
+        payload: {
+          message: {
+            type: "tool-calls",
+            chat: { id: `chat_${vertical}` },
+            toolWithToolCallList: [{ toolCall: { id: `fc_${vertical}`, type: "function", function: { name: tool, arguments: args } } }],
+          },
+        },
+      });
+      expect(shared.statusCode).toBe(200);
+      const parsed = JSON.parse(shared.json().results[0].result as string) as { ok: boolean };
+      expect(parsed.ok).toBe(true);
+    }
+
     const unknown = await app.inject({
       method: "POST",
       url: "/v/clinic/vapi/tools/book_job",

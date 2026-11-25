@@ -194,6 +194,7 @@ export function buildClinicAssistant(input: {
       provider: input.provider ?? "groq",
       model: input.model ?? "openai/gpt-oss-120b",
       temperature: 0.2,
+      maxTokens: 2000,
       messages: [{ role: "system", content: CLINIC_PROMPT }],
       tools: tools.map((tool) => ({
         type: "function" as const,
