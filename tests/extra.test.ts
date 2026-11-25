@@ -111,6 +111,9 @@ describe("more tool and webhook paths", () => {
     });
     expect(envelope.statusCode).toBe(200);
     expect(envelope.json().results).toHaveLength(2);
+    expect(typeof envelope.json().results[0].result).toBe("string");
+    expect(JSON.parse(envelope.json().results[0].result as string).ok).toBe(false);
+    expect(JSON.parse(envelope.json().results[1].result as string).ok).toBe(true);
 
     const mismatch = await app.inject({
       method: "POST",
@@ -124,7 +127,7 @@ describe("more tool and webhook paths", () => {
         },
       },
     });
-    expect(mismatch.json().results[0].result.code).toBe("tool_mismatch");
+    expect(JSON.parse(mismatch.json().results[0].result as string).code).toBe("tool_mismatch");
 
     const ignored = await app.inject({
       method: "POST",

@@ -153,6 +153,7 @@ export type VapiAssistantPayload = {
     provider: "groq" | "google";
     model: string;
     temperature: number;
+    maxTokens: number;
     messages: Array<{ role: "system"; content: string }>;
     tools: AssistantTool[];
   };
@@ -179,6 +180,7 @@ export function buildAssistant(input: {
       provider: input.provider ?? "groq",
       model: input.model ?? "openai/gpt-oss-120b",
       temperature: 0.3,
+      maxTokens: 2000,
       messages: [{ role: "system", content: SYSTEM_PROMPT }],
       tools: buildTools(base, input.serverUrlSecret),
     },

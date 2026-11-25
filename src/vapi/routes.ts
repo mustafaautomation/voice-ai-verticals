@@ -136,7 +136,13 @@ async function handleToolCalls(
     );
     results.push({ toolCallId: toolCall.id, result });
   }
-  return reply.code(200).send({ results });
+  // Vapi requires each result (or error) to be a single-line string. Objects are ignored as "no result returned".
+  return reply.code(200).send({
+    results: results.map((row) => ({
+      toolCallId: row.toolCallId,
+      result: typeof row.result === "string" ? row.result : JSON.stringify(row.result),
+    })),
+  });
 }
 
 async function runOne(verticalId: string, call: Normalized, deps: VapiRouteDeps): Promise<unknown> {
