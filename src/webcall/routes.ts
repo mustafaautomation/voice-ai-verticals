@@ -8,7 +8,7 @@ export type WebCallAuth = { mode: "jwt"; privateKey: string; orgId: string } | {
 export type WebCallDeps = {
   quota: CallQuota;
   auth: WebCallAuth;
-  assistantId: string;
+  assistants: Record<string, string>;
   allowedOrigins: string[];
   tokenTtlSeconds: number;
   perVisitor: number;
@@ -59,9 +59,10 @@ function limitMessage(scope: QuotaScope, retryAfterSeconds: number, perVisitor: 
 export async function registerWebCallRoutes(app: FastifyInstance, deps: WebCallDeps | null): Promise<void> {
   app.post("/v/:verticalId/api/call-token", async (request, reply) => {
     reply.header("cache-control", "no-store");
-    const verticalId = (request.params as { verticalId?: string }).verticalId;
-    if (verticalId !== "hvac") return reply.code(404).send({ error: "unknown_vertical" });
-    if (!deps) {
+    const verticalId = (request.params as { verticalId?: string }).verticalId ?? "";
+    if (verticalId !== "hvac" && verticalId !== "clinic") return reply.code(404).send({ error: "unknown_vertical" });
+    const assistantId = deps?.assistants[verticalId];
+    if (!deps || !assistantId) {
       return reply.code(503).send({ error: "web_calls_disabled", message: "Browser calls are not configured on this server." });
     }
     const origin = request.headers.origin;
@@ -83,12 +84,12 @@ export async function registerWebCallRoutes(app: FastifyInstance, deps: WebCallD
       });
     }
     if (deps.auth.mode === "public-key") {
-      return reply.code(200).send({ token: deps.auth.publicKey, mode: "public-key", assistantId: deps.assistantId, callsLeft: result.visitorRemaining });
+      return reply.code(200).send({ token: deps.auth.publicKey, mode: "public-key", assistantId, callsLeft: result.visitorRemaining });
     }
     const signed = signVapiPublicToken({
       privateKey: deps.auth.privateKey,
       orgId: deps.auth.orgId,
-      assistantId: deps.assistantId,
+      assistantId,
       allowedOrigins: deps.allowedOrigins,
       ttlSeconds: deps.tokenTtlSeconds,
       now,
@@ -96,7 +97,7 @@ export async function registerWebCallRoutes(app: FastifyInstance, deps: WebCallD
     return reply.code(200).send({
       token: signed.token,
       mode: "jwt",
-      assistantId: deps.assistantId,
+      assistantId,
       expiresAt: signed.expiresAt,
       callsLeft: result.visitorRemaining,
     });

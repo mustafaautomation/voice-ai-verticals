@@ -7,8 +7,14 @@ import { JobStore } from "./store/jobs.js";
 import { SmsStore } from "./store/sms.js";
 import { BRAND, HVAC_ID } from "./verticals/hvac/brand.js";
 import { dispatchSms, safetySms, textBackSms, confirmationSms } from "./verticals/hvac/messages.js";
+import { seedClinicIfEmpty } from "./verticals/clinic/seed.js";
 
 export function seedIfEmpty(db: SqliteDatabase, now: Date): void {
+  seedHvacIfEmpty(db, now);
+  seedClinicIfEmpty(db, now);
+}
+
+function seedHvacIfEmpty(db: SqliteDatabase, now: Date): void {
   const jobs = new JobStore(db);
   if (jobs.counts(HVAC_ID) > 0) return;
   const customers = new CustomerStore(db);

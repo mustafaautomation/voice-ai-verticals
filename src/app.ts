@@ -68,7 +68,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     await app.register(fastifyStatic, { root: join(process.cwd(), "public", "assets"), prefix: "/assets/" });
   }
 
-  app.get("/health", async () => ({ ok: true, service: "voice-ai-verticals", verticals: ["hvac"] }));
+  app.get("/health", async () => ({ ok: true, service: "voice-ai-verticals", verticals: ["hvac", "clinic"] }));
 
   await registerPageRoutes(app, { config: deps.config, db: deps.db, sms, now });
   const config = deps.config;
@@ -78,13 +78,16 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       : config.vapiPublicKey
         ? { mode: "public-key", publicKey: config.vapiPublicKey }
         : null;
+  const assistants: Record<string, string> = {};
+  if (config.vapiAssistantId) assistants.hvac = config.vapiAssistantId;
+  if (config.vapiClinicAssistantId) assistants.clinic = config.vapiClinicAssistantId;
   await registerWebCallRoutes(
     app,
-    auth && config.vapiAssistantId
+    auth && Object.keys(assistants).length > 0
       ? {
           quota: new MemoryCallQuota({ perVisitor: config.webCallLimitPerVisitor, perDay: config.webCallLimitPerDay }),
           auth,
-          assistantId: config.vapiAssistantId,
+          assistants,
           allowedOrigins: config.webCallOrigins,
           tokenTtlSeconds: config.webCallTokenTtlSeconds,
           perVisitor: config.webCallLimitPerVisitor,

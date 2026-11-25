@@ -19,7 +19,7 @@ function setState(state, text) {
   consoleEl.dataset.state = state;
   if (text) statusEl.textContent = text;
   live = state === "live";
-  if (label) label.textContent = live ? "End call" : "Talk to dispatch";
+  if (label) label.textContent = live ? "End call" : button.dataset.idleLabel || "Talk to dispatch";
   button.disabled = state === "connecting";
 }
 

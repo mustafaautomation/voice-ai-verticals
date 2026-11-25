@@ -36,6 +36,30 @@ Portfolio demo. Fictional data.
 
 A WebM of the same walkthrough is at [docs/demo.webm](docs/demo.webm). With the app on port 4317, `npx tsx scripts/record-demo.ts` prints a new webm path. Convert it with ffmpeg if you want a replacement GIF.
 
+### Lindenmere Primary Care
+
+Portfolio demo. Fictional clinic. No real PHI. Intended host: **https://clinic.quvantic.com** (same app, `Host` header selects the clinic pages). Local path: http://127.0.0.1:4317/v/clinic.
+
+The front desk verifies name and date of birth before it discusses a visit. Chest pain, stroke signs, severe breathing trouble, and anaphylaxis are told to call 911 and are not booked. Suicidal ideation is told to call or text 988, and the agent does not ask for a plan. Urgent symptoms book a sick visit or warm-transfer to the nurse line. Routine visits book. Refills go to a nurse queue with no dosing advice. The board masks dates of birth, phone numbers, and member ids, and every chart tool writes an audit line.
+
+![Clinic home](docs/screenshots/clinic-home.png)
+
+![Clinic schedule](docs/screenshots/clinic-board.png)
+
+![Masked call](docs/screenshots/clinic-call.png)
+
+![Patients](docs/screenshots/clinic-patients.png)
+
+![Clinic walkthrough](docs/clinic-demo.gif)
+
+Sync that assistant separately:
+
+```bash
+VERTICAL=clinic PUBLIC_BASE_URL=https://clinic.quvantic.com npm run vapi:sync
+```
+
+Tool URLs are `https://clinic.quvantic.com/v/clinic/vapi/...`. Put the new assistant id in `VAPI_CLINIC_ASSISTANT_ID`. Model `openai/gpt-oss-120b`, voice Clara, same as HVAC. Add `clinic.quvantic.com` on the Vercel project `voice-ai-verticals`; the default `VERTICAL_HOSTS` already maps it.
+
 ## Architecture
 
 ```mermaid
@@ -202,7 +226,7 @@ With `VAPI_API_KEY` and `VAPI_ORG_ID`, the response is a 30-second HS256 public 
 
 ## Evals
 
-Fifteen scripted HVAC scenarios replay tool calls against an in-memory job board. CI does not need an API key. They check tool names, the outcome, open jobs, and SMS kinds. They do not grade wording.
+`npm run eval` runs the HVAC scenarios and the clinic scenarios. CI does not need an API key. They check tool names and outcomes, not wording.
 
 ```bash
 npm run eval
@@ -239,7 +263,8 @@ Copy `.env.example`. Never commit `.env`.
 | `VAPI_API_KEY` | for sync and JWT calls | Vapi private key. Empty is a dry run. |
 | `VAPI_ORG_ID` | for JWT calls | Org id used in the public token. |
 | `VAPI_PUBLIC_KEY` | fallback | Returned only after the limit check. |
-| `VAPI_ASSISTANT_ID` | for browser calls | Created by `npm run vapi:sync`. |
+| `VAPI_ASSISTANT_ID` | for HVAC browser calls | Created by `npm run vapi:sync`. |
+| `VAPI_CLINIC_ASSISTANT_ID` | for clinic browser calls | Created by `VERTICAL=clinic npm run vapi:sync`. |
 | `VAPI_MODEL_PROVIDER` | no | `groq` (default) or `google`. |
 | `VAPI_MODEL` | no | Default `openai/gpt-oss-120b`. |
 | `PUBLIC_BASE_URL` | yes for sync | URL Vapi can reach. |

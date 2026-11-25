@@ -12,6 +12,15 @@ import {
   type HvacToolContext,
 } from "./hvac/runtime.js";
 import { isHvacTool } from "./hvac/schemas.js";
+import { isDeskOpen as clinicDeskOpen } from "./clinic/schedule.js";
+import {
+  clinicCaller,
+  clinicOutcome,
+  executeClinicTool,
+  maybeClinicTextBack,
+  simulateClinicMissedCall,
+} from "./clinic/runtime.js";
+import { isClinicTool } from "./clinic/schemas.js";
 
 export type ToolContext = HvacToolContext;
 
@@ -36,6 +45,16 @@ export const RUNTIMES: Record<string, VerticalRuntime> = {
     deskOpen: (now) => isDeskOpen(HVAC_OPS, now),
     onEndOfCall: async (ctx, call, endedReason) => ((await maybeTextBack(ctx, call, endedReason)) ? "text_back" : null),
     simulateMissedCall,
+  },
+  clinic: {
+    id: "clinic",
+    isTool: isClinicTool,
+    execute: executeClinicTool,
+    outcomeFor: clinicOutcome,
+    callerFromTool: clinicCaller,
+    deskOpen: clinicDeskOpen,
+    onEndOfCall: async (ctx, call, endedReason) => ((await maybeClinicTextBack(ctx, call, endedReason)) ? "text_back" : null),
+    simulateMissedCall: simulateClinicMissedCall,
   },
 };
 

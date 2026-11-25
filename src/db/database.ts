@@ -100,6 +100,54 @@ export function migrate(db: SqliteDatabase): void {
       created_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS sms_vertical ON sms_messages(vertical_id, created_at);
+
+    CREATE TABLE IF NOT EXISTS clinic_patients (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      dob TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      phone_digits TEXT NOT NULL,
+      payer TEXT NOT NULL DEFAULT '',
+      member_id TEXT NOT NULL DEFAULT '',
+      pcp_id TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS clinic_patients_name ON clinic_patients(name);
+
+    CREATE TABLE IF NOT EXISTS clinic_appointments (
+      id TEXT PRIMARY KEY,
+      patient_id TEXT NOT NULL,
+      provider_id TEXT NOT NULL,
+      visit_type TEXT NOT NULL,
+      starts_at TEXT NOT NULL,
+      ends_at TEXT NOT NULL,
+      status TEXT NOT NULL,
+      reason TEXT NOT NULL DEFAULT '',
+      source_call_id TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS clinic_provider_start
+      ON clinic_appointments(provider_id, starts_at)
+      WHERE status = 'scheduled';
+
+    CREATE TABLE IF NOT EXISTS clinic_refills (
+      id TEXT PRIMARY KEY,
+      patient_id TEXT NOT NULL,
+      medication TEXT NOT NULL,
+      pharmacy TEXT NOT NULL,
+      status TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS clinic_audit (
+      id TEXT PRIMARY KEY,
+      action TEXT NOT NULL,
+      subject_id TEXT,
+      ok INTEGER NOT NULL,
+      summary TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
   `);
 }
 

@@ -5,6 +5,8 @@ export type VerticalListing = {
   status: "live" | "coming_soon";
   summary: string;
   planned: string;
+  href?: string;
+  cta?: string;
 };
 
 export const CATALOG: VerticalListing[] = [
@@ -15,14 +17,18 @@ export const CATALOG: VerticalListing[] = [
     status: "live",
     summary: "After-hours dispatcher for a fictional Duluth heating and cooling company. Emergency triage, arrival windows, tech text, missed-call text-back.",
     planned: "Live in this repo.",
+    href: "/v/hvac",
+    cta: "Open the HVAC demo",
   },
   {
     id: "clinic",
     name: "Medical clinic",
-    industry: "Healthcare front desk",
-    status: "coming_soon",
-    summary: "Hours, new-patient booking, and a hard stop on clinical advice.",
-    planned: "Same tool contract as the Brightside Dental demo at voice.quvantic.com, folded in as a vertical config.",
+    industry: "Primary and urgent care",
+    status: "live",
+    summary: "Fictional Madison front desk. Identity check, 911 and 988 routing, visits, refills. No diagnosis and no real PHI.",
+    planned: "Live in this repo.",
+    href: "/v/clinic",
+    cta: "Open the clinic demo",
   },
   {
     id: "fintech",

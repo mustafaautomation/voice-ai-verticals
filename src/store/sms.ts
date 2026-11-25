@@ -3,7 +3,7 @@ import type { SqliteDatabase } from "../db/database.js";
 import { newId } from "../platform/ids.js";
 import { toUtcIso } from "../platform/time.js";
 
-export type SmsKind = "dispatch" | "confirmation" | "text_back" | "safety";
+export type SmsKind = "dispatch" | "confirmation" | "text_back" | "safety" | "refill";
 export type SmsStatus = "queued" | "sent" | "failed";
 
 export type SmsMessage = {
@@ -25,6 +25,7 @@ export type OutboundSms = {
   kind: SmsKind;
   to: string;
   body: string;
+  from?: string;
   relatedType?: string;
   relatedId?: string;
 };

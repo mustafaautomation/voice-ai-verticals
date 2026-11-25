@@ -1,4 +1,5 @@
 import { buildAssistant, type VapiAssistantPayload } from "../verticals/hvac/assistant.js";
+import { buildClinicAssistant } from "../verticals/clinic/assistant.js";
 
 type FetchImpl = typeof fetch;
 
@@ -16,14 +17,16 @@ export async function syncAssistant(input: {
   serverUrlSecret?: string;
   provider?: "groq" | "google";
   model?: string;
+  vertical?: "hvac" | "clinic";
   fetchImpl?: FetchImpl;
 }): Promise<SyncResult> {
-  const payload = buildAssistant({
+  const built = {
     publicBaseUrl: input.publicBaseUrl,
     serverUrlSecret: input.serverUrlSecret,
     provider: input.provider,
     model: input.model,
-  });
+  };
+  const payload = input.vertical === "clinic" ? buildClinicAssistant(built) : buildAssistant(built);
   if (!input.apiKey) return { mode: "dry-run", payload };
   const fetchImpl = input.fetchImpl ?? fetch;
   const headers = { authorization: `Bearer ${input.apiKey}`, "content-type": "application/json" };

@@ -22,6 +22,8 @@ export function outcomeLabel(outcome: string): string {
     text_back: "Text queued",
     slot_unavailable: "Window full",
     off_topic: "Declined",
+    refused: "Refused",
+    refill: "Refill queued",
     completed: "Completed",
     no_booking: "No booking",
   };
@@ -57,15 +59,15 @@ export function renderLanding(): string {
       <p>${escapeHtml(vertical.summary)}</p>
       <p class="planned">${escapeHtml(vertical.planned)}</p>
       ${
-        live
-          ? `<a class="button" href="/v/hvac">Open the HVAC demo</a>`
+        live && vertical.href && vertical.cta
+          ? `<a class="button" href="${vertical.href}">${escapeHtml(vertical.cta)}</a>`
           : `<span class="soon-pill">Coming soon</span>`
       }
     </article>`;
   }).join("");
   return shell({
     title: "Voice verticals · portfolio demos",
-    description: "A multi-vertical voice AI platform. HVAC is live. Clinic, fintech, legal, restaurant, and property management are coming soon.",
+    description: "A multi-vertical voice AI platform. HVAC and a fictional primary-care clinic are live.",
     body: `<header class="bar">
       <a class="brand" href="/">
         <span class="mark" aria-hidden="true"></span>
@@ -73,6 +75,7 @@ export function renderLanding(): string {
       </a>
       <nav>
         <a href="/v/hvac">HVAC demo</a>
+        <a href="/v/clinic">Clinic demo</a>
         <a href="/v/hvac/board">Dispatch board</a>
         <a href="https://github.com/mustafaautomation">GitHub</a>
       </nav>
@@ -81,10 +84,10 @@ export function renderLanding(): string {
       <section class="hero platform">
         <p class="eyebrow">Portfolio demo · fictional businesses · free tiers only</p>
         <h1>One voice core. A dispatcher for every trade.</h1>
-        <p class="lede">Browser calls through Vapi, tools defined in code, and a mock back office you can click through. The first vertical answers the phone for a made-up Duluth heating company. The others are slots in the same registry.</p>
+        <p class="lede">Browser calls through Vapi, tools defined in code, and a mock back office you can click through. Fennwick Comfort answers for a made-up Duluth heating company. Lindenmere Primary Care answers for a made-up Madison clinic. The other trades are still slots in the registry.</p>
         <div class="hero-actions">
           <a class="button" href="/v/hvac">Talk to Fennwick Comfort</a>
-          <a class="button ghost" href="/v/hvac/board">See jobs, calls, and texts</a>
+          <a class="button ghost" href="/v/clinic">Talk to Lindenmere</a>
         </div>
       </section>
       <section class="catalog" aria-label="Verticals">

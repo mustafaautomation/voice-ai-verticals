@@ -10,6 +10,8 @@ import { JobStore } from "../store/jobs.js";
 import { SmsStore } from "../store/sms.js";
 import { getRuntime, toolContext } from "../verticals/registry.js";
 import { renderBoard, renderCall, renderHvacHome, renderLanding, renderNotFound } from "./render.js";
+import { renderClinicCall, renderClinicDesk, renderClinicHome, type ClinicDesk } from "./clinic-render.js";
+import { ClinicStore } from "../verticals/clinic/store.js";
 
 const missedSchema = z.object({
   name: z.string().max(120).optional().default(""),
@@ -21,20 +23,22 @@ export async function registerPageRoutes(
   deps: { config: AppConfig; db: SqliteDatabase; sms: SmsProvider; now: () => Date },
 ): Promise<void> {
   app.get("/", async (request, reply) => {
-    if (verticalForHost(request.hostname, deps.config.verticalHosts) === "hvac") {
-      return reply.type("text/html").send(renderHvacHome(linkBase(request, deps.config)));
-    }
+    const hostVertical = verticalForHost(request.hostname, deps.config.verticalHosts);
+    if (hostVertical === "hvac") return reply.type("text/html").send(renderHvacHome(linkBase(request, deps.config, "hvac")));
+    if (hostVertical === "clinic") return reply.type("text/html").send(renderClinicHome(linkBase(request, deps.config, "clinic")));
     return reply.type("text/html").send(renderLanding());
   });
   app.get("/platform", async (_request, reply) => reply.type("text/html").send(renderLanding()));
-  app.get("/v/hvac", async (request, reply) => reply.type("text/html").send(renderHvacHome(linkBase(request, deps.config))));
-  app.get("/v/hvac/", async (request, reply) => reply.redirect("/v/hvac"));
+  app.get("/v/hvac", async (request, reply) => reply.type("text/html").send(renderHvacHome(linkBase(request, deps.config, "hvac"))));
+  app.get("/v/hvac/", async (_request, reply) => reply.redirect("/v/hvac"));
+  app.get("/v/clinic", async (request, reply) => reply.type("text/html").send(renderClinicHome(linkBase(request, deps.config, "clinic"))));
+  app.get("/v/clinic/", async (_request, reply) => reply.redirect("/v/clinic"));
 
   for (const tab of ["board", "calls", "messages", "customers"] as const) {
     app.get(`/v/hvac/${tab}`, async (request, reply) => {
       const query = typeof (request.query as { q?: string }).q === "string" ? (request.query as { q: string }).q : "";
       const notice = typeof (request.query as { notice?: string }).notice === "string" ? (request.query as { notice: string }).notice : "";
-      const base = linkBase(request, deps.config);
+      const base = linkBase(request, deps.config, "hvac");
       return reply.type("text/html").send(
         renderBoard(base, tab, load(deps.db, tab === "calls" ? query : ""), query, notice),
       );
@@ -45,14 +49,14 @@ export async function registerPageRoutes(
     const id = (request.params as { id: string }).id;
     const calls = new CallStore(deps.db);
     const call = calls.getById(id);
-    const base = linkBase(request, deps.config);
+    const base = linkBase(request, deps.config, "hvac");
     if (!call || call.verticalId !== "hvac") return reply.code(404).type("text/html").send(renderNotFound(base));
     return reply.type("text/html").send(renderCall(base, call, calls.listToolCalls(call.id)));
   });
 
   app.post("/v/hvac/demo/missed-call", async (request, reply) => {
     const parsed = missedSchema.safeParse(request.body ?? {});
-    const base = linkBase(request, deps.config);
+    const base = linkBase(request, deps.config, "hvac");
     if (!parsed.success) return reply.redirect(`${base}/messages?notice=Enter a callback number.`);
     const runtime = getRuntime("hvac");
     if (!runtime) return reply.code(404).send({ error: "unknown_vertical" });
@@ -71,10 +75,60 @@ export async function registerPageRoutes(
     if (!result.ok) return reply.redirect(`${base}/messages?notice=${encodeURIComponent(result.message)}`);
     return reply.redirect(`${base}/messages?notice=Missed-call text queued in the demo inbox.`);
   });
+
+  for (const tab of ["board", "calls", "messages", "patients", "audit"] as const) {
+    app.get(`/v/clinic/${tab}`, async (request, reply) => {
+      const query = typeof (request.query as { q?: string }).q === "string" ? (request.query as { q: string }).q : "";
+      const notice = typeof (request.query as { notice?: string }).notice === "string" ? (request.query as { notice: string }).notice : "";
+      const base = linkBase(request, deps.config, "clinic");
+      return reply.type("text/html").send(renderClinicDesk(base, tab, loadClinic(deps.db, tab === "calls" ? query : ""), query, notice));
+    });
+  }
+  app.get("/v/clinic/calls/:id", async (request, reply) => {
+    const id = (request.params as { id: string }).id;
+    const calls = new CallStore(deps.db);
+    const call = calls.getById(id);
+    const base = linkBase(request, deps.config, "clinic");
+    if (!call || call.verticalId !== "clinic") return reply.code(404).type("text/html").send(renderNotFound(base));
+    return reply.type("text/html").send(renderClinicCall(base, call, calls.listToolCalls(call.id)));
+  });
+  app.post("/v/clinic/demo/missed-call", async (request, reply) => {
+    const parsed = missedSchema.safeParse(request.body ?? {});
+    const base = linkBase(request, deps.config, "clinic");
+    if (!parsed.success) return reply.redirect(`${base}/messages?notice=Enter a callback number.`);
+    const runtime = getRuntime("clinic");
+    if (!runtime) return reply.code(404).send({ error: "unknown_vertical" });
+    const result = await runtime.simulateMissedCall(
+      toolContext({
+        db: deps.db,
+        sms: deps.sms,
+        fromNumber: deps.config.smsFromNumber,
+        onCallNumber: deps.config.onCallNumber,
+        transferNumber: deps.config.transferNumber,
+        now: deps.now(),
+        callRowId: null,
+      }),
+      { name: parsed.data.name, phone: parsed.data.phone },
+    );
+    if (!result.ok) return reply.redirect(`${base}/messages?notice=${encodeURIComponent(result.message)}`);
+    return reply.redirect(`${base}/messages?notice=Missed-call text queued in the demo inbox.`);
+  });
 }
 
-export function linkBase(request: FastifyRequest, config: AppConfig): string {
-  return verticalForHost(request.hostname, config.verticalHosts) ? "" : "/v/hvac";
+export function linkBase(request: FastifyRequest, config: AppConfig, verticalId: string): string {
+  return verticalForHost(request.hostname, config.verticalHosts) === verticalId ? "" : `/v/${verticalId}`;
+}
+
+function loadClinic(db: SqliteDatabase, callQuery: string): ClinicDesk {
+  const clinic = new ClinicStore(db);
+  return {
+    visits: clinic.listAppointments(),
+    calls: new CallStore(db).list("clinic", callQuery),
+    messages: new SmsStore(db).list("clinic"),
+    patients: clinic.listPatients(),
+    refills: clinic.listRefills(),
+    audit: clinic.listAudit(),
+  };
 }
 
 function load(db: SqliteDatabase, callQuery: string) {

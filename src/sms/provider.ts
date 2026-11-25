@@ -18,7 +18,7 @@ export class MockSmsProvider implements SmsProvider {
   async send(message: OutboundSms): Promise<SmsMessage> {
     return this.store.insert({
       provider: "mock",
-      fromNumber: this.fromNumber,
+      fromNumber: message.from ?? this.fromNumber,
       status: "queued",
       message: { ...message, to: toE164(message.to) },
     });
@@ -67,7 +67,7 @@ export class HttpSmsProvider implements SmsProvider {
     }
     return this.store.insert({
       provider: "http",
-      fromNumber: this.options.fromNumber,
+      fromNumber: message.from ?? this.options.fromNumber,
       status,
       message: { ...message, to },
     });
