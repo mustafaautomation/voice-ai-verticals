@@ -42,6 +42,51 @@ function addLine(role, text, final = true) {
 
 class LimitError extends Error {}
 
+function describeError(error) {
+  if (!error) return "unknown error";
+  if (typeof error === "string") return error;
+  const nested = error.error && typeof error.error === "object" ? error.error : null;
+  const candidates = [
+    nested?.error?.message,
+    nested?.message,
+    nested?.errorMsg,
+    error.message,
+    error.errorMsg,
+    error.reason,
+    error.type,
+    typeof error.error === "string" ? error.error : null,
+  ];
+  for (const item of candidates) {
+    if (typeof item === "string" && item.trim()) return item.trim();
+  }
+  try {
+    const raw = JSON.stringify(error);
+    if (raw && raw !== "{}") return raw.slice(0, 180);
+  } catch {
+    // ignore circular structure
+  }
+  return String(error);
+}
+
+function formatCallFailure(phase, error) {
+  const detail = describeError(error);
+  const raw = `${detail} ${error?.name ?? ""} ${error?.type ?? ""}`;
+  if (/credit|balance|wallet|payment/i.test(raw)) {
+    return "The demo is out of free voice credits. The board still works.";
+  }
+  if (/NotAllowedError|PermissionDenied|permission denied|not allowed/i.test(raw)) {
+    return "Microphone permission was denied. Allow microphone access in your browser and try again.";
+  }
+  if (/NotFoundError|DevicesNotFound|device not found|no microphone/i.test(raw)) {
+    return "No microphone was found on this device. Connect a microphone and try again.";
+  }
+  if (/Content Security Policy|CSP|esm\.sh|Failed to fetch dynamically imported module/i.test(raw)) {
+    return `Could not load the voice SDK (${detail}).`;
+  }
+  const prefix = phase === "start" ? "The call could not start" : "The call could not connect";
+  return `${prefix}: ${detail}`;
+}
+
 async function requestToken() {
   const response = await fetch(tokenUrl, { method: "POST", headers: { accept: "application/json" } });
   const body = await response.json().catch(() => ({}));
@@ -54,13 +99,13 @@ async function load(token) {
     const mod = await import("https://esm.sh/@vapi-ai/web@3.1.1");
     VapiClass = mod.default?.default ?? mod.default;
   }
-  const client = new VapiClass(token);
-  client.on("call-start", () => setState("live", "Connected. Tell dispatch what is going on."));
+  const client = new VapiClass(token, undefined, { avoidEval: true });
+  client.on("call-start", () => setState("live", "Connected. Speak into your microphone."));
   client.on("call-end", () => {
-    setState("idle", `Call ended. Jobs and texts are on ${boardUrl}.`);
+    setState("idle", `Call ended. Activity is on ${boardUrl}.`);
     levelEl.style.width = "0";
   });
-  client.on("speech-start", () => { if (live) statusEl.textContent = "Dispatch is speaking…"; });
+  client.on("speech-start", () => { if (live) statusEl.textContent = "Assistant is speaking…"; });
   client.on("speech-end", () => { if (live) statusEl.textContent = "Listening…"; });
   client.on("volume-level", (level) => { levelEl.style.width = `${Math.min(100, Math.round(level * 100))}%`; });
   client.on("message", (message) => {
@@ -71,11 +116,8 @@ async function load(token) {
     }
   });
   client.on("error", (error) => {
-    const text = JSON.stringify(error?.error ?? error ?? "");
-    const credits = /credit|balance|wallet|payment/i.test(text);
-    setState("idle", credits
-      ? "The demo is out of free voice credits. The dispatch board still works."
-      : "The call could not connect. Check microphone permission and try again.");
+    console.error("[voice-call]", error);
+    setState("idle", formatCallFailure("connect", error));
   });
   return client;
 }
@@ -97,6 +139,7 @@ button.addEventListener("click", async () => {
       setState("limited", error.message);
       return;
     }
-    setState("idle", "The call could not start. Check microphone permission and try again.");
+    console.error("[voice-call]", error);
+    setState("idle", formatCallFailure("start", error));
   }
 });

@@ -22,6 +22,23 @@ describe("pages", () => {
     await app.close();
   });
 
+  it("sets CSP headers allowing Daily WebRTC call-machine and fallback CDNs", async () => {
+    const app = await buildApp({ config: testConfig(), db: memoryDb(), now: () => NOW });
+    const res = await app.inject({ method: "GET", url: "/v/hvac" });
+    expect(res.statusCode).toBe(200);
+    const csp = String(res.headers["content-security-policy"] ?? "");
+    expect(csp).toContain("https://*.daily.co");
+    expect(csp).toContain("https://*.dailywebrtc.com");
+    expect(csp).toContain("https://*.dailywebrtc.net");
+    expect(csp).toContain("wss://*.dailywebrtc.com");
+    expect(csp).toContain("wss://*.dailywebrtc.net");
+    expect(csp).toContain("https://*.pluot.blue");
+    expect(csp).toContain("'wasm-unsafe-eval'");
+    expect(csp).toContain("blob:");
+    await app.close();
+  });
+
+
   it("serves clean HVAC paths on the hvac host", async () => {
     const db = memoryDb();
     seedIfEmpty(db, NOW);
