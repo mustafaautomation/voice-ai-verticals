@@ -276,7 +276,7 @@ The core that should stay shared: Vapi auth and idempotency (`src/vapi`), browse
 
 ## Setup
 
-Requires Node.js 22.
+Requires Node.js 22.12 or later (`.nvmrc` pins 22, which CI uses). Vitest 5 supports Node 22.12+, 24, and 26+; odd releases such as 25 install with an `EBADENGINE` warning.
 
 ```bash
 cp .env.example .env
@@ -316,7 +316,7 @@ With `VAPI_API_KEY` and `VAPI_ORG_ID`, the response is a 30-second HS256 public 
 
 ## Evals
 
-`npm run eval` runs the HVAC scenarios and the clinic scenarios. CI does not need an API key. They check tool names and outcomes, not wording.
+`npm run eval` runs the scripted scenarios for all six verticals (HVAC, clinic, fintech, legal, restaurant, property). CI does not need an API key. They check tool names and outcomes, not wording.
 
 ```bash
 npm run eval
