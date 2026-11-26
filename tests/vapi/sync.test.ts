@@ -11,6 +11,7 @@ describe("assistant sync", () => {
     expect(dry.mode).toBe("dry-run");
     expect(dry.payload.model.provider).toBe("groq");
     expect(dry.payload.model.tools.map((tool) => tool.function.name)).toContain("escalate_on_call");
+    expect(dry.payload.endCallMessage).toBe("Thank you for calling Fennwick Comfort Co. Goodbye.");
     const fetchImpl = async (url: string, init?: RequestInit) => {
       if (init?.method === "PATCH") return new Response("{}", { status: 200 });
       return new Response(JSON.stringify([{ id: "asst_1", name: dry.payload.name }]), { status: 200 });
