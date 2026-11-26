@@ -173,7 +173,7 @@ export function buildAssistant(input: {
     firstMessage: `Thank you for calling ${BRAND.name}, a fictional demo in Duluth. I can triage an emergency or book a visit. What is going on?`,
     server: serverFor(`${base}/v/hvac/vapi/webhook`, input.serverUrlSecret),
     serverMessages: ["end-of-call-report"],
-    endCallMessage: `Thank you for calling ${BRAND.name}. Goodbye.`,
+    endCallMessage: `Thank you for calling ${BRAND.name.replace(/\.$/, "")}. Goodbye.`,
     silenceTimeoutSeconds: 30,
     maxDurationSeconds: 240,
     model: {
