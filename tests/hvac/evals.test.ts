@@ -23,6 +23,30 @@ describe("HVAC triage", () => {
     expect(result.jobType).toBe("no_cool");
   });
 
+  it("does not treat a working air conditioner as a no-cooling repair", () => {
+    expect(triageIssue({ description: "I'd like a quote for a new air conditioner" }).jobType).toBe("quote");
+    expect(triageIssue({ description: "Can you do a tune-up on my air conditioner?" }).jobType).toBe("tune_up");
+    const heatWaveQuote = triageIssue({
+      description: "quote on a new air conditioner before the heat wave",
+      outdoorTempF: 98,
+      vulnerableOccupant: true,
+    });
+    expect(heatWaveQuote.priority).toBe("routine");
+    expect(heatWaveQuote.jobType).toBe("quote");
+  });
+
+  it("still treats a failed air conditioner as no cooling", () => {
+    for (const description of [
+      "my air conditioner is out",
+      "the air conditioner won't turn on",
+      "the air conditioner stopped working",
+      "our air conditioner isn't cooling",
+      "the air conditioning is down",
+    ]) {
+      expect(triageIssue({ description }).jobType, description).toBe("no_cool");
+    }
+  });
+
   it("declines card-number requests", () => {
     expect(triageIssue({ description: "give me a credit card number" }).nextStep).toBe("decline");
   });
